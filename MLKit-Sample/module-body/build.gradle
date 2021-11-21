@@ -5,7 +5,7 @@ android {
     buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.mlkit.sample.body"
-        minSdkVersion 19
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode 3200300
         versionName "3.2.0.300"
@@ -46,30 +46,30 @@ dependencies {
     implementation 'com.huawei.hms:ml-computer-vision-cloud:2.0.5.300'
 
     // Face
-    implementation 'com.huawei.hms:ml-computer-vision-face:2.0.5.300'
-    implementation 'com.huawei.hms:ml-computer-vision-face-emotion-model:2.0.5.300'
-    implementation 'com.huawei.hms:ml-computer-vision-face-feature-model:2.0.5.300'
-    implementation 'com.huawei.hms:ml-computer-vision-face-shape-point-model:2.0.5.300'
-    implementation 'com.huawei.hms:ml-computer-vision-face-3d-model:2.0.5.300'
+    implementation 'com.huawei.hms:ml-computer-vision-face:3.2.0.300'
+    implementation 'com.huawei.hms:ml-computer-vision-face-emotion-model:3.2.0.300'
+    implementation 'com.huawei.hms:ml-computer-vision-face-feature-model:3.2.0.300'
+    implementation 'com.huawei.hms:ml-computer-vision-face-shape-point-model:3.2.0.300'
+    implementation 'com.huawei.hms:ml-computer-vision-face-3d-model:3.2.0.300'
 
     // Skeleton detection SDK.
-    implementation 'com.huawei.hms:ml-computer-vision-skeleton:2.0.4.300'
+    implementation 'com.huawei.hms:ml-computer-vision-skeleton:3.2.0.300'
     // Skeleton detection model.
-    implementation 'com.huawei.hms:ml-computer-vision-skeleton-model:2.0.4.300'
+    implementation 'com.huawei.hms:ml-computer-vision-skeleton-model:3.2.0.300'
     // Yoga detection model.
-    implementation 'com.huawei.hms:ml-computer-vision-yoga-model:2.0.4.300'
+    implementation 'com.huawei.hms:ml-computer-vision-yoga-model:3.2.0.300'
 
     // Liveness Detection sdk and FULL SDK
-    implementation 'com.huawei.hms:ml-computer-vision-livenessdetection:2.2.0.300'
+    implementation 'com.huawei.hms:ml-computer-vision-livenessdetection:3.2.0.300'
 
     // handkeypoint
-    implementation'com.huawei.hms:ml-computer-vision-handkeypoint:2.1.0.300'
-    implementation'com.huawei.hms:ml-computer-vision-handkeypoint-model:2.1.0.300'
-    implementation 'com.huawei.hms:ml-computer-vision-gesture-model:2.1.0.300'
+    implementation'com.huawei.hms:ml-computer-vision-handkeypoint:3.2.0.300'
+    implementation'com.huawei.hms:ml-computer-vision-handkeypoint-model:3.2.0.300'
+    implementation 'com.huawei.hms:ml-computer-vision-gesture-model:3.2.0.300'
 
     //faceVerification
-    implementation 'com.huawei.hms:ml-computer-vision-faceverify:2.2.0.300'
-    implementation 'com.huawei.hms:ml-computer-vision-faceverify-model:2.2.0.300'
+    implementation 'com.huawei.hms:ml-computer-vision-faceverify:3.2.0.300'
+    implementation 'com.huawei.hms:ml-computer-vision-faceverify-model:3.2.0.300'
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
