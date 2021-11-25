@@ -18,78 +18,25 @@
 package com.huawei.mlkit.sample.camera
 
 import android.Manifest
-import android.graphics.Bitmap
 import android.annotation.SuppressLint
 import android.app.Activity
-import kotlin.jvm.Synchronized
-import kotlin.Throws
-import android.hardware.Camera.PictureCallback
-import android.graphics.ImageFormat
-import android.hardware.Camera.PreviewCallback
-import android.view.WindowManager
-import android.hardware.Camera.CameraInfo
-import android.view.ViewGroup
-import android.view.SurfaceView
-import android.graphics.SurfaceTexture
-import android.view.SurfaceHolder
-import android.view.MotionEvent
-import android.hardware.Camera.AutoFocusCallback
-import android.graphics.RectF
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hmf.tasks.OnSuccessListener
-import com.huawei.hmf.tasks.OnFailureListener
-import com.huawei.mlkit.sample.views.graphic.LocalObjectGraphic
-import com.huawei.mlkit.sample.views.graphic.RemoteLandmarkGraphic
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import com.huawei.mlkit.sample.views.graphic.SceneDetectionGraphic
-import android.renderscript.RenderScript
-import android.util.SparseArray
-import android.widget.Toast
-import android.renderscript.Allocation
-import android.renderscript.ScriptIntrinsicBlur
-import com.huawei.mlkit.sample.views.graphic.LocalImageClassificationGraphic
-import com.huawei.mlkit.sample.views.graphic.RemoteImageClassificationGraphic
-import com.huawei.mlkit.sample.R
-import android.os.Build
-import android.provider.DocumentsContract
-import android.provider.MediaStore
-import android.content.ContentUris
-import android.os.Environment
-import android.media.MediaScannerConnection
-import android.media.MediaScannerConnection.OnScanCompletedListener
-import android.content.Intent
-import android.graphics.YuvImage
-import android.graphics.BitmapFactory
-import android.os.ParcelFileDescriptor
-import android.renderscript.ScriptIntrinsicYuvToRGB
-import android.content.SharedPreferences
 import android.content.res.Configuration
-import kotlin.jvm.JvmOverloads
-import android.content.res.TypedArray
-import android.view.View.MeasureSpec
-import android.graphics.Shader
-import android.os.Parcelable
-import android.os.Parcel
-import android.graphics.Xfermode
-import android.util.DisplayMetrics
-import android.graphics.PorterDuffXfermode
-import android.graphics.PorterDuff
-import android.graphics.DashPathEffect
-import android.widget.GridView
-import android.widget.AbsListView
-import android.graphics.drawable.Drawable
+import android.graphics.ImageFormat
 import android.hardware.Camera
+import android.hardware.Camera.PictureCallback
+import android.hardware.Camera.PreviewCallback
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.huawei.hms.common.size.Size
 import com.huawei.mlkit.sample.transactor.*
 import com.huawei.mlkit.sample.views.overlay.GraphicOverlay
 import java.io.IOException
-import java.lang.Exception
 import java.nio.ByteBuffer
 import java.util.*
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Manages the camera and allows UI updates on top of it (e.g. overlaying extra Graphics or
@@ -100,7 +47,7 @@ import java.util.*
  */
 @SuppressLint("MissingPermission")
 class LensEngine(
-    protected var activity: Activity,
+    private var activity: Activity,
     configuration: CameraConfiguration,
     graphicOverlay: GraphicOverlay
 ) {
@@ -108,18 +55,19 @@ class LensEngine(
     var camera: Camera? = null
         private set
     private var transactingThread: Thread? = null
-    private val transactingRunnable: FrameTransactingRunnable
-    private val transactorLock = Any()
+    private val transactingRunnable: FrameTransactingRunnable = FrameTransactingRunnable()
+    private val transactorLock = ReentrantLock()
+    private val transactorCondition = transactorLock.newCondition()
     private var frameTransactor: ImageTransactor? = null
-    private val selector: CameraSelector
+    private val selector: CameraSelector = CameraSelector(activity, configuration)
     private val bytesToByteBuffer: MutableMap<ByteArray, ByteBuffer> = IdentityHashMap()
-    private val overlay: GraphicOverlay
+    private val overlay: GraphicOverlay = graphicOverlay
 
     /**
      * Stop the camera and release the resources of the camera and analyzer.
      */
     fun release() {
-        synchronized(transactorLock) {
+        transactorLock.withLock {
             stop()
             transactingRunnable.release()
             if (frameTransactor != null) {
@@ -160,37 +108,33 @@ class LensEngine(
      */
     @Synchronized
     fun takePicture(pictureCallback: PictureCallback?) {
-        synchronized(transactorLock) {
-            if (camera != null) {
-                camera!!.takePicture(null, null, null, pictureCallback)
-            }
+        transactorLock.withLock {
+            camera?.takePicture(null, null, null, pictureCallback)
         }
     }
 
     private fun initializeOverlay() {
-        if (overlay != null) {
-            val min: Int
-            val max: Int
-            if (frameTransactor!!.isFaceDetection) {
-                min = CameraConfiguration.Companion.DEFAULT_HEIGHT
-                max = CameraConfiguration.Companion.DEFAULT_WIDTH
-                if (activity.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    overlay.setCameraInfo(min, max, 0)
-                } else {
-                    overlay.setCameraInfo(max, min, 0)
-                }
+        val min: Int
+        val max: Int
+        if (frameTransactor!!.isFaceDetection) {
+            min = CameraConfiguration.Companion.DEFAULT_HEIGHT
+            max = CameraConfiguration.Companion.DEFAULT_WIDTH
+            if (activity.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                overlay.setCameraInfo(min, max, 0)
             } else {
-                val size = previewSize
-                min = Math.min(size!!.width, size.height)
-                max = Math.max(size.width, size.height)
-                if (activity.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    overlay.setCameraInfo(min, max, facing)
-                } else {
-                    overlay.setCameraInfo(max, min, facing)
-                }
+                overlay.setCameraInfo(max, min, 0)
             }
-            overlay.clear()
+        } else {
+            val size = previewSize
+            min = min(size!!.width, size.height)
+            max = max(size.width, size.height)
+            if (activity.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                overlay.setCameraInfo(min, max, facing)
+            } else {
+                overlay.setCameraInfo(max, min, facing)
+            }
         }
+        overlay.clear()
     }
 
     /**
@@ -217,26 +161,24 @@ class LensEngine(
             }
             transactingThread = null
         }
-        if (camera != null) {
-            camera!!.stopPreview()
-            camera!!.setPreviewCallbackWithBuffer(null)
-            try {
-                camera!!.setPreviewDisplay(null)
-                camera!!.setPreviewTexture(null)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to clear camera preview: $e")
-            }
-            camera!!.release()
-            camera = null
+        camera?.stopPreview()
+        camera?.setPreviewCallbackWithBuffer(null)
+        try {
+            camera?.setPreviewDisplay(null)
+            camera?.setPreviewTexture(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to clear camera preview: $e")
         }
+        camera?.release()
+        camera = null
         bytesToByteBuffer.clear()
     }
 
     @SuppressLint("InlinedApi")
     @Throws(IOException::class)
-    private fun createCamera(): Camera? {
+    private fun createCamera(): Camera {
         val newCamera = selector.createCamera()
-        newCamera!!.setPreviewCallbackWithBuffer(CameraPreviewCallback())
+        newCamera.setPreviewCallbackWithBuffer(CameraPreviewCallback())
         newCamera.addCallbackBuffer(createPreviewBuffer(selector.previewSize))
         newCamera.addCallbackBuffer(createPreviewBuffer(selector.previewSize))
         newCamera.addCallbackBuffer(createPreviewBuffer(selector.previewSize))
@@ -269,10 +211,8 @@ class LensEngine(
     }
 
     fun setMachineLearningFrameTransactor(transactor: ImageTransactor?) {
-        synchronized(transactorLock) {
-            if (frameTransactor != null) {
-                frameTransactor!!.stop()
-            }
+        transactorLock.withLock {
+            frameTransactor?.stop()
             frameTransactor = transactor
         }
     }
@@ -281,7 +221,8 @@ class LensEngine(
      * It is used to receive the frame captured by the camera and pass it to the analyzer.
      */
     private inner class FrameTransactingRunnable internal constructor() : Runnable {
-        private val lock = Any()
+        private val lock = ReentrantLock()
+        private val condition = lock.newCondition()
         private var active = true
         private var pendingFrameData: ByteBuffer? = null
 
@@ -290,13 +231,13 @@ class LensEngine(
          */
         @SuppressLint("Assert")
         fun release() {
-            synchronized(lock) { assert(transactingThread!!.state == Thread.State.TERMINATED) }
+            lock.withLock { assert(transactingThread!!.state == Thread.State.TERMINATED) }
         }
 
         fun setActive(active: Boolean) {
-            synchronized(lock) {
+            lock.withLock {
                 this.active = active
-                lock.notifyAll()
+                condition.signalAll()
             }
         }
 
@@ -304,7 +245,7 @@ class LensEngine(
          * Sets the frame data received from the camera. Adds a previously unused frame buffer (if exit) back to the camera.
          */
         fun setNextFrame(data: ByteArray, camera: Camera) {
-            synchronized(lock) {
+            lock.withLock {
                 if (pendingFrameData != null) {
                     camera.addCallbackBuffer(pendingFrameData!!.array())
                     pendingFrameData = null
@@ -317,7 +258,7 @@ class LensEngine(
                     return
                 }
                 pendingFrameData = bytesToByteBuffer[data]
-                lock.notifyAll()
+                condition.signalAll()
             }
         }
 
@@ -325,11 +266,11 @@ class LensEngine(
         override fun run() {
             var data: ByteBuffer?
             while (true) {
-                synchronized(lock) {
+                lock.withLock {
                     while (active && pendingFrameData == null) {
                         try {
                             // Waiting for next frame.
-                            lock.wait()
+                            condition.await()
                         } catch (e: InterruptedException) {
                             Log.w(TAG, "Frame transacting loop terminated.", e)
                             return
@@ -343,12 +284,12 @@ class LensEngine(
                     pendingFrameData = null
                 }
                 try {
-                    synchronized(transactorLock) {
+                    transactorLock.withLock {
                         frameTransactor!!.process(
                             data,
                             FrameMetadata.Builder()
-                                .setWidth(selector.previewSize.width)
-                                .setHeight(selector.previewSize.height)
+                                .setWidth(selector.previewSize!!.width)
+                                .setHeight(selector.previewSize!!.height)
                                 .setRotation(selector.rotation)
                                 .setCameraFacing(selector.facing)
                                 .build(),
@@ -369,9 +310,6 @@ class LensEngine(
     }
 
     init {
-        transactingRunnable = FrameTransactingRunnable()
-        selector = CameraSelector(activity, configuration)
-        overlay = graphicOverlay
         overlay.clear()
     }
 }

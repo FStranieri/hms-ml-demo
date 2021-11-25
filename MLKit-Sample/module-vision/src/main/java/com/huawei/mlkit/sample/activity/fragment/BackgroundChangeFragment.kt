@@ -15,94 +15,25 @@
  */
 package com.huawei.mlkit.sample.activity.fragment
 
-import com.huawei.mlkit.sample.activity.BaseActivity.onCreate
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBar
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBarFontColor
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter
-import android.annotation.SuppressLint
-import android.os.Bundle
-import com.huawei.mlkit.sample.R
-import android.graphics.Bitmap
-import com.google.gson.Gson
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionConstant
-import com.huawei.mlkit.sample.activity.table.TableRecognitionActivity
-import android.content.pm.PackageManager
-import jxl.write.WriteException
-import kotlin.Throws
-import jxl.write.WritableWorkbook
-import jxl.Workbook
-import jxl.write.WritableSheet
-import android.graphics.BitmapFactory
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzer
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzerFactory
-import com.google.gson.JsonObject
-import com.huawei.hmf.tasks.OnSuccessListener
 import android.content.Intent
-import com.huawei.hmf.tasks.OnFailureListener
-import android.content.DialogInterface
-import android.provider.MediaStore
-import android.content.ContentValues
-import android.app.Activity
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.activity.`object`.ObjectDetectionActivity
-import com.bumptech.glide.Glide
-import com.huawei.mlkit.sample.activity.adapter.imgseg.MyGridViewAdapter
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter.ItemHolder
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute.TablesContent.TableAttribute.TableCellAttribute
-import com.huawei.hms.mlplugin.productvisionsearch.MLProductVisionSearchCapture.AbstractProductFragment
-import com.huawei.mlkit.sample.activity.adapter.BottomSheetAdapter
-import com.huawei.mlkit.sample.activity.fragment.ProductFragment
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.renderscript.RenderScript
-import android.view.View.OnTouchListener
-import android.os.Build
-import android.graphics.drawable.BitmapDrawable
-import androidx.viewpager.widget.ViewPager
-import com.huawei.mlkit.sample.activity.adapter.TabFragmentAdapter
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity.PagerChangeListener
-import com.huawei.mlkit.sample.activity.fragment.BackgroundChangeFragment
-import com.huawei.mlkit.sample.activity.fragment.CaptureImageFragment
-import com.huawei.mlkit.sample.activity.fragment.SliceImageFragment
-import com.huawei.mlkit.sample.activity.fragment.HairImageFragment
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewStartActivity
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewCorretionActivity
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzer
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionResult
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionCoordinateInput
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerSetting
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerFactory
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewDetectResult
-import com.huawei.mlkit.sample.activity.scenedection.SceneDectionActivity
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.content.pm.PackageInfo
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import android.util.SparseArray
+import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.activity.imageclassfication.ImageClassificationActivity
-import com.huawei.agconnect.config.AGConnectServicesConfig
-import com.huawei.hms.mlsdk.common.MLApplication
-import com.huawei.mlkit.sample.activity.table.TableRecognitionStartActivity
-import com.huawei.mlkit.sample.activity.``object`
+import com.huawei.mlkit.sample.R
+import com.huawei.mlkit.sample.activity.adapter.imgseg.MyGridViewAdapter
 import com.huawei.mlkit.sample.activity.entity.Entity
+import com.huawei.mlkit.sample.activity.fragment.BackgroundChangeFragment
 import com.huawei.mlkit.sample.activity.imageseg.*
 import com.huawei.mlkit.sample.util.Constant
 import com.huawei.mlkit.sample.util.SharedPreferencesUtil
-import java.util.ArrayList
+import java.util.*
 
 class BackgroundChangeFragment : Fragment() {
-    private var mGridView: GridView? = null
+    private lateinit var mGridView: GridView
     private var mDataList: ArrayList<Entity>? = null
     private var mAdapter: MyGridViewAdapter? = null
-    private var mTakePhoto: ImageView? = null
+    private lateinit var mTakePhoto: ImageView
     private var mIndex = -1
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -119,13 +50,9 @@ class BackgroundChangeFragment : Fragment() {
         mTakePhoto = view.findViewById(R.id.take_photo)
         mGridView = view.findViewById(R.id.gridview)
         mAdapter = MyGridViewAdapter(mDataList, this.context)
-        mGridView.setAdapter(mAdapter)
-        mGridView.setOnItemClickListener(AdapterView.OnItemClickListener { parent, view, position, id ->
-            if (mDataList!![position].isSelected) {
-                mDataList!![position].isSelected = false
-            } else {
-                mDataList!![position].isSelected = true
-            }
+        mGridView.adapter = mAdapter
+        mGridView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+            mDataList!![position].isSelected = !mDataList!![position].isSelected
             mIndex = -1
             for (i in mDataList!!.indices) {
                 if (i != position) {
@@ -135,9 +62,11 @@ class BackgroundChangeFragment : Fragment() {
                     mIndex = i
                 }
             }
-            SharedPreferencesUtil.getInstance(this@BackgroundChangeFragment.context).putIntValue(
-                Constant.VALUE_KEY, mIndex
-            )
+            this@BackgroundChangeFragment.context?.let {
+                SharedPreferencesUtil.getInstance(it)?.putIntValue(
+                    Constant.VALUE_KEY, mIndex
+                )
+            }
             /**
              * Notify the adapter that the bound data has changed and the view should be refreshed.
              */
@@ -145,7 +74,7 @@ class BackgroundChangeFragment : Fragment() {
              * Notify the adapter that the bound data has changed and the view should be refreshed.
              */
             mAdapter!!.notifyDataSetChanged()
-        })
+        }
         mTakePhoto.setOnClickListener(View.OnClickListener {
             val intent =
                 Intent(this@BackgroundChangeFragment.activity, TakePhotoActivity::class.java)
@@ -158,8 +87,9 @@ class BackgroundChangeFragment : Fragment() {
         mDataList = ArrayList()
         var entity: Entity
         val saveIndex =
-            SharedPreferencesUtil.getInstance(this.context).getIntValue(Constant.VALUE_KEY)
+            SharedPreferencesUtil.getInstance(requireContext())?.getIntValue(Constant.VALUE_KEY) ?: -1
         mIndex = saveIndex
+        if (saveIndex != -1) {
         for (i in Constant.IMAGES.indices) {
             entity = if (i == saveIndex) {
                 Entity(
@@ -174,10 +104,11 @@ class BackgroundChangeFragment : Fragment() {
             }
             mDataList!!.add(entity)
         }
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        SharedPreferencesUtil.getInstance(this.context).putIntValue(Constant.VALUE_KEY, 0)
+        SharedPreferencesUtil.getInstance(requireContext())?.putIntValue(Constant.VALUE_KEY, 0)
     }
 }

@@ -15,61 +15,8 @@
  */
 package com.huawei.mlkit.sample.util
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import kotlin.jvm.Synchronized
-import kotlin.Throws
-import android.hardware.Camera.PictureCallback
-import android.hardware.Camera.PreviewCallback
-import android.view.WindowManager
-import android.hardware.Camera.CameraInfo
-import android.view.ViewGroup
-import android.view.SurfaceView
-import android.view.SurfaceHolder
-import android.view.MotionEvent
-import android.hardware.Camera.AutoFocusCallback
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hmf.tasks.OnSuccessListener
-import com.huawei.hmf.tasks.OnFailureListener
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalObjectGraphic
-import com.huawei.mlkit.sample.transactor.RemoteLandmarkTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteLandmarkGraphic
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import com.huawei.mlkit.sample.views.graphic.SceneDetectionGraphic
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.util.SparseArray
-import android.widget.Toast
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalImageClassificationGraphic
-import com.huawei.mlkit.sample.transactor.RemoteImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteImageClassificationGraphic
-import com.huawei.mlkit.sample.R
-import android.os.Build
-import android.provider.DocumentsContract
-import android.provider.MediaStore
-import android.content.ContentUris
 import android.content.Context
-import android.os.Environment
-import android.media.MediaScannerConnection
-import android.media.MediaScannerConnection.OnScanCompletedListener
-import android.content.Intent
-import android.os.ParcelFileDescriptor
-import android.content.SharedPreferences
-import kotlin.jvm.JvmOverloads
-import android.content.res.TypedArray
 import android.graphics.*
-import android.view.View.MeasureSpec
-import android.os.Parcelable
-import android.os.Parcel
-import android.util.DisplayMetrics
-import android.widget.GridView
-import android.widget.AbsListView
-import android.graphics.drawable.Drawable
 import android.renderscript.*
 import com.huawei.mlkit.sample.camera.FrameMetadata
 import java.nio.ByteBuffer
@@ -94,10 +41,10 @@ class NV21ToBitmapConverter(context: Context?) {
     fun convertYUVtoRGB(yuvData: ByteArray, width: Int, height: Int): Bitmap {
         if (yuvType == null) {
             yuvType = Type.Builder(renderScript, Element.U8(renderScript)).setX(yuvData.size)
-            `in` = Allocation.createTyped(renderScript, yuvType.create(), Allocation.USAGE_SCRIPT)
+            `in` = Allocation.createTyped(renderScript, yuvType!!.create(), Allocation.USAGE_SCRIPT)
             rgbaType =
                 Type.Builder(renderScript, Element.RGBA_8888(renderScript)).setX(width).setY(height)
-            out = Allocation.createTyped(renderScript, rgbaType.create(), Allocation.USAGE_SCRIPT)
+            out = Allocation.createTyped(renderScript, rgbaType!!.create(), Allocation.USAGE_SCRIPT)
         }
         `in`!!.copyFrom(yuvData)
         yuvToRgbIntrinsic.setInput(`in`)
@@ -209,29 +156,29 @@ class NV21ToBitmapConverter(context: Context?) {
     fun getBitmap(data: ByteBuffer?, metadata: FrameMetadata?): Bitmap {
         val target: Bitmap
         val bytes = data!!.array()
-        val width = metadata.getWidth()
-        val height = metadata.getHeight()
-        val rotation = metadata.getRotation() * 90
+        val width = metadata!!.width
+        val height = metadata.height
+        val rotation = metadata.rotation * 90
         var matrix = Matrix()
         // when width or height changed, recreate yuvType, rgbType etc
         recreateIfNeed(
             bytes,
-            metadata.getWidth(),
-            metadata.getHeight(),
-            metadata.getRotation() * 90
+            metadata.width,
+            metadata.height,
+            metadata.rotation * 90
         )
         val source = convertYUVtoRGB(bytes, width, height)
         // final Canvas canvas;
         if (rotation == 0 || rotation == 180) {
             target = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            matrix = if (metadata.getCameraFacing() == 0) {
+            matrix = if (metadata.cameraFacing == 0) {
                 getTransformationMatrix(width, height, width, height, rotation, false, false, false)
             } else {
                 getTransformationMatrix(width, height, width, height, rotation, true, false, false)
             }
         } else {
             target = Bitmap.createBitmap(height, width, Bitmap.Config.ARGB_8888)
-            matrix = if (metadata.getCameraFacing() == 0) {
+            matrix = if (metadata.cameraFacing == 0) {
                 getTransformationMatrix(width, height, height, width, rotation, false, false, false)
             } else {
                 getTransformationMatrix(width, height, height, width, rotation, true, false, false)

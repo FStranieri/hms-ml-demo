@@ -15,68 +15,14 @@
  */
 package com.huawei.mlkit.sample.transactor
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import kotlin.jvm.Synchronized
-import kotlin.Throws
-import android.hardware.Camera.PictureCallback
-import android.hardware.Camera.PreviewCallback
-import android.view.WindowManager
-import android.hardware.Camera.CameraInfo
-import android.view.ViewGroup
-import android.view.SurfaceView
-import android.view.SurfaceHolder
-import android.view.MotionEvent
-import android.hardware.Camera.AutoFocusCallback
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hmf.tasks.OnSuccessListener
-import com.huawei.hmf.tasks.OnFailureListener
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalObjectGraphic
-import com.huawei.mlkit.sample.transactor.RemoteLandmarkTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteLandmarkGraphic
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import com.huawei.mlkit.sample.views.graphic.SceneDetectionGraphic
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.renderscript.RenderScript
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.util.SparseArray
-import android.widget.Toast
-import android.renderscript.Allocation
-import android.renderscript.ScriptIntrinsicBlur
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalImageClassificationGraphic
-import com.huawei.mlkit.sample.transactor.RemoteImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteImageClassificationGraphic
-import com.huawei.mlkit.sample.R
-import android.os.Build
-import android.provider.DocumentsContract
-import android.provider.MediaStore
-import android.content.ContentUris
-import android.os.Environment
-import android.media.MediaScannerConnection
-import android.media.MediaScannerConnection.OnScanCompletedListener
-import android.content.Intent
-import android.os.ParcelFileDescriptor
-import android.renderscript.ScriptIntrinsicYuvToRGB
-import android.content.SharedPreferences
-import kotlin.jvm.JvmOverloads
-import android.content.res.TypedArray
-import android.graphics.*
-import android.view.View.MeasureSpec
-import android.os.Parcelable
-import android.os.Parcel
-import android.util.DisplayMetrics
-import android.widget.GridView
-import android.widget.AbsListView
-import android.graphics.drawable.Drawable
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.util.Log
+import android.util.SparseArray
 import android.widget.ImageView
 import com.huawei.hmf.tasks.Task
 import com.huawei.hms.mlsdk.MLAnalyzerFactory
+import com.huawei.hms.mlsdk.common.MLFrame
 import com.huawei.hms.mlsdk.imgseg.MLImageSegmentation
 import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationAnalyzer
 import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationClassification
@@ -86,7 +32,6 @@ import com.huawei.mlkit.sample.camera.FrameMetadata
 import com.huawei.mlkit.sample.util.ImageUtils
 import com.huawei.mlkit.sample.views.overlay.GraphicOverlay
 import java.io.IOException
-import java.lang.Exception
 
 class StillImageSegmentationTransactor : BaseTransactor<MLImageSegmentation> {
     private val detector: MLImageSegmentationAnalyzer
@@ -182,7 +127,6 @@ class StillImageSegmentationTransactor : BaseTransactor<MLImageSegmentation> {
         graphicOverlay: GraphicOverlay
     ) {
         graphicOverlay.clear()
-        val pixels: IntArray
         if (results.getMasks() == null) {
             Log.i(TAG, "detection failed, none mask return")
             return
@@ -191,7 +135,7 @@ class StillImageSegmentationTransactor : BaseTransactor<MLImageSegmentation> {
         if (originBitmap.isRecycled) {
             return
         }
-        pixels = if (detectCategory == -1) {
+        val pixels: IntArray = if (detectCategory == -1) {
             byteArrToIntArr(results.getMasks())
         } else if (backgroundBitmap == null) {
             changeColor(results.getMasks())
@@ -224,28 +168,40 @@ class StillImageSegmentationTransactor : BaseTransactor<MLImageSegmentation> {
     private fun byteArrToIntArr(masks: ByteArray): IntArray {
         val results = IntArray(masks.size)
         for (i in masks.indices) {
-            if (masks[i] == MLImageSegmentationClassification.TYPE_HUMAN) {
-                results[i] = Color.BLACK
-            } else if (masks[i] == MLImageSegmentationClassification.TYPE_SKY) {
-                results[i] = Color.BLUE
-            } else if (masks[i] == MLImageSegmentationClassification.TYPE_GRASS) {
-                results[i] = Color.DKGRAY
-            } else if (masks[i] == MLImageSegmentationClassification.TYPE_FOOD) {
-                results[i] = Color.YELLOW
-            } else if (masks[i] == MLImageSegmentationClassification.TYPE_CAT) {
-                results[i] = Color.LTGRAY
-            } else if (masks[i] == MLImageSegmentationClassification.TYPE_BUILD) {
-                results[i] = Color.CYAN
-            } else if (masks[i] == MLImageSegmentationClassification.TYPE_FLOWER) {
-                results[i] = Color.RED
-            } else if (masks[i] == MLImageSegmentationClassification.TYPE_WATER) {
-                results[i] = Color.GRAY
-            } else if (masks[i] == MLImageSegmentationClassification.TYPE_SAND) {
-                results[i] = Color.MAGENTA
-            } else if (masks[i] == MLImageSegmentationClassification.TYPE_MOUNTAIN) {
-                results[i] = Color.GREEN
-            } else {
-                results[i] = Color.WHITE
+            when {
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_HUMAN -> {
+                    results[i] = Color.BLACK
+                }
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_SKY -> {
+                    results[i] = Color.BLUE
+                }
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_GRASS -> {
+                    results[i] = Color.DKGRAY
+                }
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_FOOD -> {
+                    results[i] = Color.YELLOW
+                }
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_CAT -> {
+                    results[i] = Color.LTGRAY
+                }
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_BUILD -> {
+                    results[i] = Color.CYAN
+                }
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_FLOWER -> {
+                    results[i] = Color.RED
+                }
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_WATER -> {
+                    results[i] = Color.GRAY
+                }
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_SAND -> {
+                    results[i] = Color.MAGENTA
+                }
+                masks[i].toInt() == MLImageSegmentationClassification.TYPE_MOUNTAIN -> {
+                    results[i] = Color.GREEN
+                }
+                else -> {
+                    results[i] = Color.WHITE
+                }
             }
         }
         return results
@@ -265,7 +221,7 @@ class StillImageSegmentationTransactor : BaseTransactor<MLImageSegmentation> {
             originBitmap.height
         )
         for (i in masks.indices) {
-            if (masks[i] == detectCategory) {
+            if (masks[i].toInt() == detectCategory) {
                 results[i] = color
             } else {
                 results[i] = orginPixels[i]
@@ -308,7 +264,7 @@ class StillImageSegmentationTransactor : BaseTransactor<MLImageSegmentation> {
             )
         }
         for (i in masks.indices) {
-            if (masks[i] == detectCategory) {
+            if (masks[i].toInt() == detectCategory) {
                 results[i] = backgroundPixels[i]
             } else {
                 results[i] = originPixels[i]

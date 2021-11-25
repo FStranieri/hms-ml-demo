@@ -15,114 +15,37 @@
  */
 package com.huawei.mlkit.sample.activity.imageseg
 
-import com.huawei.mlkit.sample.activity.BaseActivity.onCreate
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBar
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBarFontColor
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter
-import android.widget.TextView
-import android.annotation.SuppressLint
-import android.os.Bundle
-import com.huawei.mlkit.sample.R
-import android.graphics.Bitmap
-import com.google.gson.Gson
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionConstant
-import com.huawei.mlkit.sample.activity.table.TableRecognitionActivity
-import android.content.pm.PackageManager
-import jxl.write.WriteException
-import kotlin.Throws
-import jxl.write.WritableWorkbook
-import jxl.Workbook
-import jxl.write.WritableSheet
-import android.widget.Toast
-import android.graphics.BitmapFactory
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzer
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzerFactory
-import com.google.gson.JsonObject
-import com.huawei.hmf.tasks.OnSuccessListener
 import android.content.Intent
-import com.huawei.hmf.tasks.OnFailureListener
-import android.content.DialogInterface
-import android.provider.MediaStore
-import android.content.ContentValues
-import android.app.Activity
-import android.widget.CompoundButton
-import android.widget.ToggleButton
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.activity.`object`.ObjectDetectionActivity
-import com.bumptech.glide.Glide
-import com.huawei.mlkit.sample.activity.adapter.imgseg.MyGridViewAdapter
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter.ItemHolder
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute.TablesContent.TableAttribute.TableCellAttribute
-import com.huawei.hms.mlplugin.productvisionsearch.MLProductVisionSearchCapture.AbstractProductFragment
-import android.widget.GridView
-import com.huawei.mlkit.sample.activity.adapter.BottomSheetAdapter
-import com.huawei.mlkit.sample.activity.fragment.ProductFragment
-import com.huawei.mlkit.sample.activity.imageseg.LoadHairActivity
-import com.huawei.mlkit.sample.activity.imageseg.LoadPhotoActivity
-import com.huawei.mlkit.sample.activity.imageseg.StillCutPhotoActivity
-import android.widget.AdapterView
-import android.widget.LinearLayout
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import android.widget.ImageButton
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.renderscript.RenderScript
-import android.view.View.OnTouchListener
-import android.os.Build
-import android.widget.RelativeLayout
-import android.graphics.drawable.BitmapDrawable
-import androidx.viewpager.widget.ViewPager
-import com.huawei.mlkit.sample.activity.adapter.TabFragmentAdapter
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity.PagerChangeListener
-import com.huawei.mlkit.sample.activity.fragment.BackgroundChangeFragment
-import com.huawei.mlkit.sample.activity.fragment.CaptureImageFragment
-import com.huawei.mlkit.sample.activity.fragment.SliceImageFragment
-import com.huawei.mlkit.sample.activity.fragment.HairImageFragment
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewStartActivity
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewCorretionActivity
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzer
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionResult
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionCoordinateInput
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerSetting
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerFactory
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewDetectResult
-import android.widget.EditText
-import com.huawei.mlkit.sample.activity.scenedection.SceneDectionActivity
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.content.pm.PackageInfo
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
 import android.hardware.Camera
+import android.os.Build
+import android.os.Bundle
+import android.renderscript.RenderScript
 import android.util.Log
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import android.util.SparseArray
 import android.view.*
+import android.widget.CompoundButton
+import android.widget.ImageButton
+import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.core.content.FileProvider
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.activity.imageclassfication.ImageClassificationActivity
-import com.huawei.agconnect.config.AGConnectServicesConfig
-import com.huawei.hms.mlsdk.common.MLApplication
 import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationScene
 import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationSetting
-import com.huawei.mlkit.sample.activity.table.TableRecognitionStartActivity
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity
-import com.huawei.mlkit.sample.activity.``object`
+import com.huawei.mlkit.sample.R
 import com.huawei.mlkit.sample.activity.BaseActivity
 import com.huawei.mlkit.sample.callback.ImageSegmentationResultCallBack
+import com.huawei.mlkit.sample.callback.ImageUtilCallBack
 import com.huawei.mlkit.sample.camera.CameraConfiguration
 import com.huawei.mlkit.sample.camera.LensEngine
 import com.huawei.mlkit.sample.camera.LensEnginePreview
+import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
 import com.huawei.mlkit.sample.util.Constant
 import com.huawei.mlkit.sample.util.ImageUtils
 import com.huawei.mlkit.sample.views.overlay.GraphicOverlay
 import java.io.File
 import java.io.IOException
-import java.lang.Exception
-import java.lang.RuntimeException
 
 /**
  * It is applied to the image segmentation function. The application scenario is: open the camera,
@@ -134,12 +57,12 @@ import java.lang.RuntimeException
 class TakePhotoActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener,
     ImageSegmentationResultCallBack, View.OnClickListener {
     private var lensEngine: LensEngine? = null
-    private var preview: LensEnginePreview? = null
-    private var graphicOverlay: GraphicOverlay? = null
-    private var facingSwitch: ToggleButton? = null
-    private var img_takePhoto: ImageButton? = null
-    private var img_pic: ImageButton? = null
-    private var img_back: ImageButton? = null
+    private lateinit var preview: LensEnginePreview
+    private lateinit var graphicOverlay: GraphicOverlay
+    private lateinit var facingSwitch: ToggleButton
+    private lateinit var img_takePhoto: ImageButton
+    private lateinit var img_pic: ImageButton
+    private lateinit var img_back: ImageButton
     private var cameraConfiguration: CameraConfiguration? = null
     private var index = 0
     private var facing = CameraConfiguration.CAMERA_FACING_FRONT
@@ -200,31 +123,33 @@ class TakePhotoActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener
     }
 
     private fun initAction() {
-        facingSwitch!!.setOnCheckedChangeListener(this)
-        img_back!!.setOnClickListener(this)
-        img_pic!!.setOnClickListener(this)
+        facingSwitch.setOnCheckedChangeListener(this)
+        img_back.setOnClickListener(this)
+        img_pic.setOnClickListener(this)
         // Set the display effect when the takePhoto button is clicked.
-        img_takePhoto!!.setOnTouchListener { view, motionEvent ->
+        img_takePhoto.setOnTouchListener { view, motionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_DOWN) {
-                img_takePhoto!!.setColorFilter(Color.GRAY)
+                img_takePhoto.setColorFilter(Color.GRAY)
             }
             if (motionEvent.action == MotionEvent.ACTION_UP) {
-                img_takePhoto!!.setColorFilter(Color.WHITE)
+                img_takePhoto.setColorFilter(Color.WHITE)
             }
             false
         }
-        img_takePhoto!!.setOnClickListener {
+        img_takePhoto.setOnClickListener {
             // save Picture.
             if (processImage == null) {
                 Log.e(TAG, "The image is null, unable to save.")
             } else {
                 // save current image to gallery.
                 val imageUtils = ImageUtils(this@TakePhotoActivity.applicationContext)
-                imageUtils.setImageUtilCallBack { path ->
-                    imgPath = path
-                    Log.i(TAG, "PATH:$path")
-                }
-                imageUtils.saveToAlbum(processImage)
+                imageUtils.setImageUtilCallBack(object: ImageUtilCallBack {
+                    override fun callSavePath(path: String?) {
+                        imgPath = path
+                        Log.i(TAG, "PATH:$path")
+                    }
+                })
+                imageUtils.saveToAlbum(processImage!!)
                 val matrix = Matrix()
                 matrix.postScale(0.3f, 0.3f)
                 val resizedBitmap = Bitmap.createBitmap(
@@ -236,7 +161,7 @@ class TakePhotoActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener
                     matrix,
                     true
                 )
-                img_pic!!.setImageBitmap(resizedBitmap)
+                img_pic.setImageBitmap(resizedBitmap)
             }
         }
         findViewById<View>(R.id.bt_blur).setOnClickListener {
@@ -278,7 +203,7 @@ class TakePhotoActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener
     private fun createLensEngine() {
         // If there's no existing lensEngine, create one.
         if (lensEngine == null) {
-            lensEngine = LensEngine(this, cameraConfiguration, graphicOverlay)
+            lensEngine = cameraConfiguration?.let { LensEngine(this, it, graphicOverlay) }!!
         }
         try {
             setting = MLImageSegmentationSetting.Factory()
@@ -320,7 +245,7 @@ class TakePhotoActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener
         if (null != lensEngine) {
             mCamera = lensEngine!!.camera
             try {
-                mCamera.setPreviewTexture(preview!!.surfaceTexture)
+                mCamera?.setPreviewTexture(preview.surfaceTexture)
             } catch (e: IOException) {
                 Log.d(TAG, "initViews IOException")
             }
@@ -335,10 +260,10 @@ class TakePhotoActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         Log.d(TAG, "Set facing")
         if (lensEngine != null) {
-            if (!isChecked) {
-                facing = CameraConfiguration.CAMERA_FACING_FRONT
+            facing = if (!isChecked) {
+                CameraConfiguration.CAMERA_FACING_FRONT
             } else {
-                facing = CameraConfiguration.CAMERA_FACING_BACK
+                CameraConfiguration.CAMERA_FACING_BACK
             }
             cameraConfiguration!!.setCameraFacing(facing)
             setting = MLImageSegmentationSetting.Factory()
@@ -348,7 +273,7 @@ class TakePhotoActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener
             transactor!!.setImageSegmentationResultCallBack(this)
             lensEngine!!.setMachineLearningFrameTransactor(transactor)
         }
-        preview!!.stop()
+        preview.stop()
         restartLensEngine()
     }
 
@@ -359,7 +284,7 @@ class TakePhotoActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener
 
     override fun onStop() {
         super.onStop()
-        preview!!.stop()
+        preview.stop()
     }
 
     override fun onBackPressed() {
@@ -387,7 +312,7 @@ class TakePhotoActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener
         }
     }
 
-    override fun callResultBitmap(bitmap: Bitmap) {
+    override fun callResultBitmap(bitmap: Bitmap?) {
         processImage = bitmap
     }
 

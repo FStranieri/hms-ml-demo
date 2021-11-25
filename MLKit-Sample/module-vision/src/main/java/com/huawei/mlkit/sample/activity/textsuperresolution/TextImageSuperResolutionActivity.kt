@@ -15,110 +15,40 @@
  */
 package com.huawei.mlkit.sample.activity.textsuperresolution
 
-import com.huawei.mlkit.sample.activity.BaseActivity.onCreate
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBar
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBarFontColor
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter
-import android.annotation.SuppressLint
-import android.os.Bundle
-import com.huawei.mlkit.sample.R
-import android.graphics.Bitmap
-import com.google.gson.Gson
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionConstant
-import com.huawei.mlkit.sample.activity.table.TableRecognitionActivity
-import android.content.pm.PackageManager
-import jxl.write.WriteException
-import kotlin.Throws
-import jxl.write.WritableWorkbook
-import jxl.Workbook
-import jxl.write.WritableSheet
-import android.graphics.BitmapFactory
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzer
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzerFactory
-import com.google.gson.JsonObject
-import com.huawei.hmf.tasks.OnSuccessListener
 import android.content.Intent
-import com.huawei.hmf.tasks.OnFailureListener
-import android.content.DialogInterface
-import android.provider.MediaStore
-import android.content.ContentValues
-import android.app.Activity
-import android.app.Dialog
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.activity.`object`.ObjectDetectionActivity
-import com.bumptech.glide.Glide
-import com.huawei.mlkit.sample.activity.adapter.imgseg.MyGridViewAdapter
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter.ItemHolder
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute.TablesContent.TableAttribute.TableCellAttribute
-import com.huawei.hms.mlplugin.productvisionsearch.MLProductVisionSearchCapture.AbstractProductFragment
-import com.huawei.mlkit.sample.activity.adapter.BottomSheetAdapter
-import com.huawei.mlkit.sample.activity.fragment.ProductFragment
-import com.huawei.mlkit.sample.activity.imageseg.LoadHairActivity
-import com.huawei.mlkit.sample.activity.imageseg.LoadPhotoActivity
-import com.huawei.mlkit.sample.activity.imageseg.StillCutPhotoActivity
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.renderscript.RenderScript
-import android.view.View.OnTouchListener
-import android.os.Build
-import android.graphics.drawable.BitmapDrawable
-import androidx.viewpager.widget.ViewPager
-import com.huawei.mlkit.sample.activity.adapter.TabFragmentAdapter
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity.PagerChangeListener
-import com.huawei.mlkit.sample.activity.fragment.BackgroundChangeFragment
-import com.huawei.mlkit.sample.activity.fragment.CaptureImageFragment
-import com.huawei.mlkit.sample.activity.fragment.SliceImageFragment
-import com.huawei.mlkit.sample.activity.fragment.HairImageFragment
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewStartActivity
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewCorretionActivity
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzer
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionResult
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionCoordinateInput
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerSetting
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerFactory
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewDetectResult
-import com.huawei.mlkit.sample.activity.scenedection.SceneDectionActivity
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.content.pm.PackageInfo
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import android.util.SparseArray
 import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.activity.imageclassfication.ImageClassificationActivity
-import com.huawei.agconnect.config.AGConnectServicesConfig
 import com.huawei.hmf.tasks.Task
-import com.huawei.hms.mlsdk.common.MLApplication
-import com.huawei.mlkit.sample.activity.table.TableRecognitionStartActivity
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity
-import com.huawei.mlkit.sample.activity.``object`
+import com.huawei.hms.mlsdk.common.MLFrame
+import com.huawei.hms.mlsdk.textimagesuperresolution.MLTextImageSuperResolution
+import com.huawei.hms.mlsdk.textimagesuperresolution.MLTextImageSuperResolutionAnalyzer
+import com.huawei.hms.mlsdk.textimagesuperresolution.MLTextImageSuperResolutionAnalyzerFactory
+import com.huawei.mlkit.sample.R
 import com.huawei.mlkit.sample.activity.BaseActivity
 import com.huawei.mlkit.sample.util.BitmapUtils
-import java.lang.StringBuilder
-import java.util.ArrayList
+import it.sephiroth.android.library.imagezoom.ImageViewTouch
+import java.util.*
 
 class TextImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
-    private var desImageView: ImageViewTouch? = null
-    private var srcImageView: ImageView? = null
-    private var tvImageSize: TextView? = null
-    private var adjustImgButton: ImageButton? = null
+    private lateinit var desImageView: ImageViewTouch
+    private lateinit var srcImageView: ImageView
+    private lateinit var tvImageSize: TextView
+    private lateinit var adjustImgButton: ImageButton
     private var srcBitmap: Bitmap? = null
     private var desBitmap: Bitmap? = null
-    private var dialog: Dialog? = null
+    private var dialog: AlertDialog? = null
     private var imageUri: Uri? = null
     private var selectItem = INDEX_3X
-    private var analyzer: MLTextImageSuperResolutionAnalyzer? = null
-    private var rlScale3X: RelativeLayout? = null
-    private var rlScaleOriginal: RelativeLayout? = null
-    private var rlHelp: RelativeLayout? = null
+    private lateinit var analyzer: MLTextImageSuperResolutionAnalyzer
+    private lateinit var rlScale3X: RelativeLayout
+    private lateinit var rlScaleOriginal: RelativeLayout
+    private lateinit var rlHelp: RelativeLayout
     private var strWidth: String? = null
     private var strHeight: String? = null
     private val imageViewList: MutableList<ImageView> = ArrayList()
@@ -156,9 +86,9 @@ class TextImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
         content.setText(R.string.tsr_tips_content)
         val mBtn_cancel = v.findViewById<Button>(R.id.dialog_btn_cancel)
         dialog = builder.create()
-        dialog.show()
-        dialog.getWindow()!!.setContentView(v)
-        mBtn_cancel.setOnClickListener { dialog.dismiss() }
+        dialog?.show()
+        dialog?.window?.setContentView(v)
+        mBtn_cancel.setOnClickListener { dialog?.dismiss() }
     }
 
     override fun onClick(v: View) {
@@ -179,12 +109,12 @@ class TextImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
 
     private fun showScaleChooseViews() {
         if (!isShow) {
-            rlScale3X!!.visibility = View.VISIBLE
-            rlScaleOriginal!!.visibility = View.VISIBLE
+            rlScale3X.visibility = View.VISIBLE
+            rlScaleOriginal.visibility = View.VISIBLE
             isShow = true
         } else {
-            rlScaleOriginal!!.visibility = View.GONE
-            rlScale3X!!.visibility = View.GONE
+            rlScaleOriginal.visibility = View.GONE
+            rlScale3X.visibility = View.GONE
             isShow = false
         }
     }
@@ -197,7 +127,7 @@ class TextImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
 
     private fun createAnalyzer(): MLTextImageSuperResolutionAnalyzer {
         return MLTextImageSuperResolutionAnalyzerFactory.getInstance()
-            .getTextImageSuperResolutionAnalyzer()
+            .textImageSuperResolutionAnalyzer
     }
 
     private fun selectLocalImage() {
@@ -234,7 +164,12 @@ class TextImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
                 return
             }
             srcBitmap =
-                BitmapUtils.loadFromPathWithoutZoom(this, imageUri, IMAGE_MAX_SIZE, IMAGE_MAX_SIZE)
+                BitmapUtils.loadFromPathWithoutZoom(
+                    this,
+                    imageUri!!,
+                    IMAGE_MAX_SIZE,
+                    IMAGE_MAX_SIZE
+                )
             setImage(srcImageView, srcBitmap)
         }
         if (selectItem == INDEX_ORIGINAL) {
@@ -246,7 +181,7 @@ class TextImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
         val frame = MLFrame.fromBitmap(srcBitmap)
         val task: Task<MLTextImageSuperResolution> = analyzer.asyncAnalyseFrame(frame)
         task.addOnSuccessListener { result -> // Recognition success.
-            desBitmap = result.getBitmap()
+            desBitmap = result.bitmap
             setImage(desImageView, desBitmap)
             setImageSizeInfo(desBitmap!!.width, desBitmap!!.height)
         }.addOnFailureListener { e -> // Recognition failure.
@@ -264,7 +199,7 @@ class TextImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
             .append(strHeight)
             .append(height)
             .append(STR_PX)
-        runOnUiThread { tvImageSize!!.text = resultBuilder.toString() }
+        runOnUiThread { tvImageSize.text = resultBuilder.toString() }
     }
 
     private fun setImage(imageView: ImageView?, bitmap: Bitmap?) {
@@ -273,15 +208,9 @@ class TextImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (srcBitmap != null) {
-            srcBitmap!!.recycle()
-        }
-        if (desBitmap != null) {
-            desBitmap!!.recycle()
-        }
-        if (analyzer != null) {
-            analyzer.stop()
-        }
+        srcBitmap?.recycle()
+        desBitmap?.recycle()
+        analyzer.stop()
     }
 
     companion object {

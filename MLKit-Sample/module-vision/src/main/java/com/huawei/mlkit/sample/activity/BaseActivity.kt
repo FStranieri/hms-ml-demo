@@ -63,7 +63,7 @@ open class BaseActivity : AppCompatActivity() {
          * @param activity Activity of page.
          * @param colorId Color ID.
          */
-        protected fun setStatusBarColor(activity: Activity, colorId: Int) {
+        fun setStatusBarColor(activity: Activity, colorId: Int) {
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     val window = activity.window

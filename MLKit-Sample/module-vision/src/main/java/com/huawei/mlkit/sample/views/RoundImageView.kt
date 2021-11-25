@@ -15,71 +15,18 @@
  */
 package com.huawei.mlkit.sample.views
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import kotlin.jvm.Synchronized
-import kotlin.Throws
-import android.hardware.Camera.PictureCallback
-import android.hardware.Camera.PreviewCallback
-import android.view.WindowManager
-import android.hardware.Camera.CameraInfo
-import android.view.ViewGroup
-import android.view.SurfaceView
-import android.view.SurfaceHolder
-import android.view.MotionEvent
-import android.hardware.Camera.AutoFocusCallback
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hmf.tasks.OnSuccessListener
-import com.huawei.hmf.tasks.OnFailureListener
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalObjectGraphic
-import com.huawei.mlkit.sample.transactor.RemoteLandmarkTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteLandmarkGraphic
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import com.huawei.mlkit.sample.views.graphic.SceneDetectionGraphic
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.renderscript.RenderScript
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.util.SparseArray
-import android.widget.Toast
-import android.renderscript.Allocation
-import android.renderscript.ScriptIntrinsicBlur
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalImageClassificationGraphic
-import com.huawei.mlkit.sample.transactor.RemoteImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteImageClassificationGraphic
-import com.huawei.mlkit.sample.R
-import android.os.Build
-import android.provider.DocumentsContract
-import android.provider.MediaStore
-import android.content.ContentUris
 import android.content.Context
-import android.os.Environment
-import android.media.MediaScannerConnection
-import android.media.MediaScannerConnection.OnScanCompletedListener
-import android.content.Intent
-import android.os.ParcelFileDescriptor
-import android.renderscript.ScriptIntrinsicYuvToRGB
-import android.content.SharedPreferences
-import kotlin.jvm.JvmOverloads
-import android.content.res.TypedArray
 import android.graphics.*
-import android.view.View.MeasureSpec
-import android.os.Parcelable
-import android.os.Parcel
-import android.util.DisplayMetrics
-import android.widget.GridView
-import android.widget.AbsListView
-import android.graphics.drawable.Drawable
+import android.os.Build
 import android.util.AttributeSet
+import android.util.DisplayMetrics
+import android.view.WindowManager
 import androidx.appcompat.widget.AppCompatImageView
+import com.huawei.mlkit.sample.R
 import com.huawei.mlkit.sample.util.CommonUtils
 
 class RoundImageView @JvmOverloads constructor(
-    private val context: Context,
+    context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : AppCompatImageView(
@@ -92,8 +39,8 @@ class RoundImageView @JvmOverloads constructor(
             = 0
     private var innerBorderColor = Color.WHITE // Inner border color
     private var xfermode: Xfermode? = null
-    private var width = 0
-    private var height = 0
+    private var w = 0
+    private var h = 0
     private var radius = 0f
     private var rectF: RectF? = null
     private var paint: Paint? = null
@@ -103,7 +50,7 @@ class RoundImageView @JvmOverloads constructor(
     private val screenWidth: Int
         private get() {
             val windowManager =
-                getContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val displayMetrics = DisplayMetrics()
             windowManager.defaultDisplay.getMetrics(displayMetrics)
             return displayMetrics.widthPixels
@@ -111,7 +58,7 @@ class RoundImageView @JvmOverloads constructor(
     private val screenHeight: Int
         private get() {
             val windowManager =
-                getContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val displayMetrics = DisplayMetrics()
             windowManager.defaultDisplay.getMetrics(displayMetrics)
             return displayMetrics.heightPixels
@@ -139,8 +86,8 @@ class RoundImageView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        width = w
-        height = h
+        this.w = w
+        this.h = h
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -218,7 +165,7 @@ class RoundImageView @JvmOverloads constructor(
         dashPaint!!.strokeWidth = CommonUtils.dp2px(context, 1f)
         dashPaint!!.style = Paint.Style.STROKE
         dashPaint!!.alpha = 20
-        dashPaint!!.pathEffect = DashPathEffect(floatArrayOf(35f, 40f), 0)
+        dashPaint!!.pathEffect = DashPathEffect(floatArrayOf(35f, 40f), 0F)
         canvas.drawCircle(width / 2.0f, height / 2.0f, radius + borderWidth / 2, dashPaint!!)
     }
 

@@ -15,111 +15,42 @@
  */
 package com.huawei.mlkit.sample.activity.Imagesupersesolution
 
-import com.huawei.mlkit.sample.activity.BaseActivity.onCreate
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBar
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBarFontColor
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter
-import android.annotation.SuppressLint
-import android.os.Bundle
-import com.huawei.mlkit.sample.R
-import android.graphics.Bitmap
-import com.google.gson.Gson
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionConstant
-import com.huawei.mlkit.sample.activity.table.TableRecognitionActivity
-import android.content.pm.PackageManager
-import jxl.write.WriteException
-import kotlin.Throws
-import jxl.write.WritableWorkbook
-import jxl.Workbook
-import jxl.write.WritableSheet
-import android.graphics.BitmapFactory
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzer
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzerFactory
-import com.google.gson.JsonObject
-import com.huawei.hmf.tasks.OnSuccessListener
 import android.content.Intent
-import com.huawei.hmf.tasks.OnFailureListener
-import android.content.DialogInterface
-import android.provider.MediaStore
-import android.content.ContentValues
-import android.app.Activity
-import android.app.Dialog
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.activity.`object`.ObjectDetectionActivity
-import com.bumptech.glide.Glide
-import com.huawei.mlkit.sample.activity.adapter.imgseg.MyGridViewAdapter
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter.ItemHolder
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute.TablesContent.TableAttribute.TableCellAttribute
-import com.huawei.hms.mlplugin.productvisionsearch.MLProductVisionSearchCapture.AbstractProductFragment
-import com.huawei.mlkit.sample.activity.adapter.BottomSheetAdapter
-import com.huawei.mlkit.sample.activity.fragment.ProductFragment
-import com.huawei.mlkit.sample.activity.imageseg.LoadHairActivity
-import com.huawei.mlkit.sample.activity.imageseg.LoadPhotoActivity
-import com.huawei.mlkit.sample.activity.imageseg.StillCutPhotoActivity
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.renderscript.RenderScript
-import android.view.View.OnTouchListener
-import android.os.Build
-import android.graphics.drawable.BitmapDrawable
-import androidx.viewpager.widget.ViewPager
-import com.huawei.mlkit.sample.activity.adapter.TabFragmentAdapter
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity.PagerChangeListener
-import com.huawei.mlkit.sample.activity.fragment.BackgroundChangeFragment
-import com.huawei.mlkit.sample.activity.fragment.CaptureImageFragment
-import com.huawei.mlkit.sample.activity.fragment.SliceImageFragment
-import com.huawei.mlkit.sample.activity.fragment.HairImageFragment
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewStartActivity
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewCorretionActivity
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzer
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionResult
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionCoordinateInput
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerSetting
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerFactory
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewDetectResult
-import com.huawei.mlkit.sample.activity.scenedection.SceneDectionActivity
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.content.pm.PackageInfo
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import android.util.SparseArray
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.activity.imageclassfication.ImageClassificationActivity
-import com.huawei.agconnect.config.AGConnectServicesConfig
 import com.huawei.hmf.tasks.Task
-import com.huawei.hms.mlsdk.common.MLApplication
-import com.huawei.mlkit.sample.activity.table.TableRecognitionStartActivity
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity
-import com.huawei.mlkit.sample.activity.``object`
+import com.huawei.hms.mlsdk.common.MLFrame
+import com.huawei.hms.mlsdk.imagesuperresolution.MLImageSuperResolutionAnalyzer
+import com.huawei.hms.mlsdk.imagesuperresolution.MLImageSuperResolutionAnalyzerFactory
+import com.huawei.hms.mlsdk.imagesuperresolution.MLImageSuperResolutionAnalyzerSetting
+import com.huawei.hms.mlsdk.imagesuperresolution.MLImageSuperResolutionResult
+import com.huawei.mlkit.sample.R
 import com.huawei.mlkit.sample.activity.BaseActivity
 import com.huawei.mlkit.sample.util.BitmapUtils
-import java.lang.StringBuilder
-import java.util.ArrayList
+import java.util.*
 
 class ImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
-    private var desImageView: ImageView? = null
-    private var srcImageView: ImageView? = null
-    private var tvImageSize: TextView? = null
-    private var adjustImgButton: ImageButton? = null
+    private lateinit var desImageView: ImageView
+    private lateinit var srcImageView: ImageView
+    private lateinit var tvImageSize: TextView
+    private lateinit var adjustImgButton: ImageButton
     private var srcBitmap: Bitmap? = null
     private var desBitmap: Bitmap? = null
     private var imageUri: Uri? = null
     private var selectItem = INDEX_1X
     private var analyzer: MLImageSuperResolutionAnalyzer? = null
-    private var rlScale1X: RelativeLayout? = null
-    private var rlScale3X: RelativeLayout? = null
-    private var rlScaleOriginal: RelativeLayout? = null
-    private var rlHelp: RelativeLayout? = null
-    private var dialog: Dialog? = null
+    private lateinit var rlScale1X: RelativeLayout
+    private lateinit var rlScale3X: RelativeLayout
+    private lateinit var rlScaleOriginal: RelativeLayout
+    private lateinit var rlHelp: RelativeLayout
+    private lateinit var dialog: AlertDialog
     private var strWidth: String? = null
     private var strHeight: String? = null
     private val imageViewList: MutableList<ImageView> = ArrayList()
@@ -162,7 +93,7 @@ class ImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
         val mBtn_cancel = v.findViewById<Button>(R.id.dialog_btn_cancel)
         dialog = builder.create()
         dialog.show()
-        dialog.getWindow()!!.setContentView(v)
+        dialog.window!!.setContentView(v)
         mBtn_cancel.setOnClickListener { dialog.dismiss() }
     }
 
@@ -186,24 +117,20 @@ class ImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
 
     private fun showScaleChooseViews() {
         if (!isShow) {
-            rlScale1X!!.visibility = View.VISIBLE
-            rlScale3X!!.visibility = View.VISIBLE
-            rlScaleOriginal!!.visibility = View.VISIBLE
+            rlScale1X.visibility = View.VISIBLE
+            rlScale3X.visibility = View.VISIBLE
+            rlScaleOriginal.visibility = View.VISIBLE
             isShow = true
         } else {
-            rlScaleOriginal!!.visibility = View.GONE
-            rlScale1X!!.visibility = View.GONE
-            rlScale3X!!.visibility = View.GONE
+            rlScaleOriginal.visibility = View.GONE
+            rlScale1X.visibility = View.GONE
+            rlScale3X.visibility = View.GONE
             isShow = false
         }
     }
 
     private fun onClickItem(index: Int) {
-        isSwitch = if (selectItem == index) {
-            false
-        } else {
-            true
-        }
+        isSwitch = selectItem != index
         selectItem = index
         resetSelectItem(selectItem)
         reloadAndDetectImage(false, isSwitch)
@@ -211,7 +138,7 @@ class ImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
 
     private fun createAnalyzer(): MLImageSuperResolutionAnalyzer {
         return if (selectItem == INDEX_1X) {
-            MLImageSuperResolutionAnalyzerFactory.getInstance().getImageSuperResolutionAnalyzer()
+            MLImageSuperResolutionAnalyzerFactory.getInstance().imageSuperResolutionAnalyzer
         } else {
             val setting: MLImageSuperResolutionAnalyzerSetting =
                 MLImageSuperResolutionAnalyzerSetting.Factory()
@@ -252,35 +179,34 @@ class ImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
 
     private fun reloadAndDetectImage(isReload: Boolean, isSwitch: Boolean) {
         if (isReload) {
-            if (imageUri == null) {
+            imageUri?.let {
+                srcBitmap =
+                    BitmapUtils.loadFromPathWithoutZoom(this, it, IMAGE_MAX_SIZE, IMAGE_MAX_SIZE)
+                setImage(srcImageView, srcBitmap)
+            } ?: return
+        }
+        srcBitmap?.let {
+            if (selectItem == INDEX_ORIGINAL) {
+                setImage(desImageView, srcBitmap)
+                setImageSizeInfo(it.width, it.height)
                 return
             }
-            srcBitmap =
-                BitmapUtils.loadFromPathWithoutZoom(this, imageUri, IMAGE_MAX_SIZE, IMAGE_MAX_SIZE)
-            setImage(srcImageView, srcBitmap)
-        }
-        if (srcBitmap == null) {
-            return
-        }
-        if (selectItem == INDEX_ORIGINAL) {
-            setImage(desImageView, srcBitmap)
-            setImageSizeInfo(srcBitmap!!.width, srcBitmap!!.height)
-            return
-        }
+        } ?: return
+
         if (isSwitch) {
             // The analyzer only supports a single instance.
             // If you want to switch to a different scale, you need to release the model and recreate it.
-            analyzer.stop()
+            analyzer?.stop()
             analyzer = createAnalyzer()
         }
         // Create an MLFrame by using the bitmap.
         val frame = MLFrame.fromBitmap(srcBitmap)
-        val task: Task<MLImageSuperResolutionResult> = analyzer.asyncAnalyseFrame(frame)
-        task.addOnSuccessListener { result -> // Recognition success.
+        val task: Task<MLImageSuperResolutionResult>? = analyzer?.asyncAnalyseFrame(frame)
+        task?.addOnSuccessListener { result -> // Recognition success.
             desBitmap = result.getBitmap()
             setImage(desImageView, desBitmap)
             setImageSizeInfo(desBitmap!!.width, desBitmap!!.height)
-        }.addOnFailureListener { e -> // Recognition failure.
+        }?.addOnFailureListener { e -> // Recognition failure.
             Log.e(TAG, "Failed." + e.message)
             Toast.makeText(applicationContext, e.message, Toast.LENGTH_SHORT).show()
         }
@@ -295,7 +221,7 @@ class ImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
             .append(strHeight)
             .append(height)
             .append(STR_PX)
-        runOnUiThread { tvImageSize!!.text = resultBuilder.toString() }
+        runOnUiThread { tvImageSize.text = resultBuilder.toString() }
     }
 
     private fun setImage(imageView: ImageView?, bitmap: Bitmap?) {
@@ -311,7 +237,7 @@ class ImageSuperResolutionActivity : BaseActivity(), View.OnClickListener {
             desBitmap!!.recycle()
         }
         if (analyzer != null) {
-            analyzer.stop()
+            analyzer?.stop()
         }
     }
 

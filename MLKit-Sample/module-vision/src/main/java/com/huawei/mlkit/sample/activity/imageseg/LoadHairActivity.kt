@@ -15,86 +15,18 @@
  */
 package com.huawei.mlkit.sample.activity.imageseg
 
-import com.huawei.mlkit.sample.activity.BaseActivity.onCreate
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBar
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBarFontColor
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter
-import android.annotation.SuppressLint
-import android.os.Bundle
-import com.huawei.mlkit.sample.R
-import android.graphics.Bitmap
-import com.google.gson.Gson
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionConstant
-import com.huawei.mlkit.sample.activity.table.TableRecognitionActivity
-import android.content.pm.PackageManager
-import jxl.write.WriteException
-import kotlin.Throws
-import jxl.write.WritableWorkbook
-import jxl.Workbook
-import jxl.write.WritableSheet
-import android.graphics.BitmapFactory
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzer
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzerFactory
-import com.google.gson.JsonObject
-import com.huawei.hmf.tasks.OnSuccessListener
 import android.content.Intent
-import com.huawei.hmf.tasks.OnFailureListener
-import android.content.DialogInterface
-import android.provider.MediaStore
-import android.content.ContentValues
-import android.app.Activity
-import com.huawei.mlkit.sample.activity.`object`.ObjectDetectionActivity
-import com.bumptech.glide.Glide
-import com.huawei.mlkit.sample.activity.adapter.imgseg.MyGridViewAdapter
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter.ItemHolder
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute.TablesContent.TableAttribute.TableCellAttribute
-import com.huawei.hms.mlplugin.productvisionsearch.MLProductVisionSearchCapture.AbstractProductFragment
-import com.huawei.mlkit.sample.activity.adapter.BottomSheetAdapter
-import com.huawei.mlkit.sample.activity.fragment.ProductFragment
-import com.huawei.mlkit.sample.activity.imageseg.LoadHairActivity
-import com.huawei.mlkit.sample.activity.imageseg.LoadPhotoActivity
-import com.huawei.mlkit.sample.activity.imageseg.StillCutPhotoActivity
-import android.renderscript.RenderScript
-import android.view.View.OnTouchListener
-import android.os.Build
-import android.graphics.drawable.BitmapDrawable
-import androidx.viewpager.widget.ViewPager
-import com.huawei.mlkit.sample.activity.adapter.TabFragmentAdapter
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity.PagerChangeListener
-import com.huawei.mlkit.sample.activity.fragment.BackgroundChangeFragment
-import com.huawei.mlkit.sample.activity.fragment.CaptureImageFragment
-import com.huawei.mlkit.sample.activity.fragment.SliceImageFragment
-import com.huawei.mlkit.sample.activity.fragment.HairImageFragment
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewStartActivity
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewCorretionActivity
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzer
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionResult
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionCoordinateInput
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerSetting
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerFactory
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewDetectResult
-import com.huawei.mlkit.sample.activity.scenedection.SceneDectionActivity
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import android.content.pm.PackageInfo
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import android.util.SparseArray
 import android.view.*
 import android.widget.*
-import com.huawei.mlkit.sample.activity.imageclassfication.ImageClassificationActivity
-import com.huawei.agconnect.config.AGConnectServicesConfig
-import com.huawei.hms.mlsdk.common.MLApplication
 import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationSetting
-import com.huawei.mlkit.sample.activity.table.TableRecognitionStartActivity
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity
-import com.huawei.mlkit.sample.activity.``object`
+import com.huawei.mlkit.sample.R
 import com.huawei.mlkit.sample.activity.BaseActivity
 import com.huawei.mlkit.sample.transactor.*
 import com.huawei.mlkit.sample.util.BitmapUtils
@@ -104,15 +36,15 @@ import java.util.*
 
 class LoadHairActivity : BaseActivity() {
     private var mImageUri: Uri? = null
-    private var preview: ImageView? = null
-    private var linearObjects: LinearLayout? = null
+    private lateinit var preview: ImageView
+    private lateinit var linearObjects: LinearLayout
     private var imageTransactor: ImageTransactor? = null
     private var graphicOverlay: GraphicOverlay? = null
     private var originBitmap: Bitmap? = null
     private var colorvalue = Color.GREEN
     private var imageMaxWidth = 0
     private var imageMaxHeight = 0
-    private var colorSelector: ColorSelector? = null
+    private lateinit var colorSelector: ColorSelector
     private var isLandScape = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,8 +58,7 @@ class LoadHairActivity : BaseActivity() {
 
     private fun initView() {
         linearObjects = findViewById(R.id.linear_objects)
-        val categories: Array<String>
-        categories = if (isEngLanguage) {
+        val categories: Array<String> = if (isEngLanguage) {
             CATEGORIES_EN
         } else {
             CATEGORIES
@@ -144,13 +75,13 @@ class LoadHairActivity : BaseActivity() {
                 ).create()
                 val transactor = StillImageSegmentationTransactor(
                     setting,
-                    originBitmap,
+                    originBitmap!!,
                     preview,
                     i
                 )
                 transactor.setColor(colorvalue)
                 imageTransactor = transactor
-                imageTransactor.process(originBitmap, graphicOverlay)
+                imageTransactor!!.process(originBitmap, graphicOverlay!!)
             }
         }
         graphicOverlay = findViewById(R.id.previewOverlay)
@@ -162,12 +93,12 @@ class LoadHairActivity : BaseActivity() {
         colorSelector.setColors(Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE, Color.WHITE)
         colorSelector.setOnColorSelectorChangeListener(object :
             ColorSelector.OnColorSelectorChangeListener {
-            override fun onColorChanged(picker: ColorSelector, color: Int) {
+            override fun onColorChanged(picker: ColorSelector?, color: Int) {
                 colorvalue = color
             }
 
-            override fun onStartColorSelect(picker: ColorSelector) {}
-            override fun onStopColorSelect(picker: ColorSelector) {}
+            override fun onStartColorSelect(picker: ColorSelector?) {}
+            override fun onStopColorSelect(picker: ColorSelector?) {}
         })
         colorSelector.post(Runnable { selectLocalImage() })
     }
@@ -178,7 +109,7 @@ class LoadHairActivity : BaseActivity() {
         this.startActivityForResult(intent, REQUEST_SLECT_IMAGE)
     }
 
-    val isEngLanguage: Boolean
+    private val isEngLanguage: Boolean
         get() {
             val locale = Locale.getDefault()
             if (locale != null) {
@@ -190,7 +121,7 @@ class LoadHairActivity : BaseActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Log.d(this.TAG, "requestCode:$requestCode : $resultCode")
+        Log.d(TAG, "requestCode:$requestCode : $resultCode")
         if (requestCode == REQUEST_TAKE_PHOTOR && resultCode == RESULT_OK) {
             loadImage()
         } else if (requestCode == REQUEST_TAKE_PHOTOR && resultCode == RESULT_CANCELED) {
@@ -208,20 +139,20 @@ class LoadHairActivity : BaseActivity() {
     private fun loadImage() {
         originBitmap = BitmapUtils.loadFromPath(
             this@LoadHairActivity,
-            mImageUri,
+            mImageUri!!,
             maxWidthOfImage,
             maxHeightOfImage
         )
-        preview!!.setImageBitmap(originBitmap)
+        preview.setImageBitmap(originBitmap)
     }
 
     private val maxWidthOfImage: Int
         private get() {
             if (imageMaxWidth == 0) {
                 if (isLandScape) {
-                    imageMaxWidth = (preview!!.parent as View).height
+                    imageMaxWidth = (preview.parent as View).height
                 } else {
-                    imageMaxWidth = (preview!!.parent as View).width
+                    imageMaxWidth = (preview.parent as View).width
                 }
             }
             return imageMaxWidth
@@ -230,9 +161,9 @@ class LoadHairActivity : BaseActivity() {
         private get() {
             if (imageMaxHeight == 0) {
                 if (isLandScape) {
-                    imageMaxHeight = (preview!!.parent as View).width
+                    imageMaxHeight = (preview.parent as View).width
                 } else {
-                    imageMaxHeight = (preview!!.parent as View).height
+                    imageMaxHeight = (preview.parent as View).height
                 }
             }
             return imageMaxHeight
@@ -242,14 +173,10 @@ class LoadHairActivity : BaseActivity() {
         super.onDestroy()
         BitmapUtils.recycleBitmap(originBitmap)
         mImageUri = null
-        if (imageTransactor != null) {
-            imageTransactor!!.stop()
-            imageTransactor = null
-        }
-        if (graphicOverlay != null) {
-            graphicOverlay!!.clear()
-            graphicOverlay = null
-        }
+        imageTransactor?.stop()
+        imageTransactor = null
+        graphicOverlay?.clear()
+        graphicOverlay = null
     }
 
     fun onBackPressed(view: View?) {

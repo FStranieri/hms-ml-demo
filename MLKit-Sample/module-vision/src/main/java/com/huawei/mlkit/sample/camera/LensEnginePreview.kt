@@ -18,75 +18,27 @@
 package com.huawei.mlkit.sample.camera
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import kotlin.jvm.Synchronized
-import kotlin.Throws
-import android.hardware.Camera.PictureCallback
-import android.hardware.Camera.PreviewCallback
-import android.view.WindowManager
-import android.hardware.Camera.CameraInfo
-import android.view.ViewGroup
-import android.view.SurfaceView
-import android.view.SurfaceHolder
-import android.view.MotionEvent
-import android.hardware.Camera.AutoFocusCallback
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hmf.tasks.OnSuccessListener
-import com.huawei.hmf.tasks.OnFailureListener
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalObjectGraphic
-import com.huawei.mlkit.sample.transactor.RemoteLandmarkTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteLandmarkGraphic
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import com.huawei.mlkit.sample.views.graphic.SceneDetectionGraphic
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.renderscript.RenderScript
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.util.SparseArray
-import android.widget.Toast
-import android.renderscript.Allocation
-import android.renderscript.ScriptIntrinsicBlur
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalImageClassificationGraphic
-import com.huawei.mlkit.sample.transactor.RemoteImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteImageClassificationGraphic
-import com.huawei.mlkit.sample.R
-import android.os.Build
-import android.provider.DocumentsContract
-import android.provider.MediaStore
-import android.content.ContentUris
 import android.content.Context
-import android.os.Environment
-import android.media.MediaScannerConnection
-import android.media.MediaScannerConnection.OnScanCompletedListener
-import android.content.Intent
-import android.os.ParcelFileDescriptor
-import android.renderscript.ScriptIntrinsicYuvToRGB
-import android.content.SharedPreferences
 import android.content.res.Configuration
-import kotlin.jvm.JvmOverloads
-import android.content.res.TypedArray
 import android.graphics.*
-import android.view.View.MeasureSpec
-import android.os.Parcelable
-import android.os.Parcel
-import android.util.DisplayMetrics
-import android.widget.GridView
-import android.widget.AbsListView
-import android.graphics.drawable.Drawable
 import android.hardware.Camera
+import android.hardware.Camera.AutoFocusCallback
+import android.hardware.Camera.PictureCallback
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.view.ViewGroup
 import java.io.IOException
-import java.util.ArrayList
+import java.util.*
+import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
-class LensEnginePreview(private val context: Context, attrs: AttributeSet?) : ViewGroup(
+class LensEnginePreview(context: Context, attrs: AttributeSet?) : ViewGroup(
     context, attrs
 ) {
-    private val surfaceView: SurfaceView
+    private val surfaceView: SurfaceView = SurfaceView(context)
     var surfaceTexture: SurfaceTexture? = null
         private set
     private var startRequested = false
@@ -114,23 +66,19 @@ class LensEnginePreview(private val context: Context, attrs: AttributeSet?) : Vi
     }
 
     fun stop() {
-        if (lensEngine != null) {
-            lensEngine!!.stop()
-        }
+        lensEngine?.stop()
     }
 
     fun release() {
-        if (lensEngine != null) {
-            lensEngine!!.release()
-            lensEngine = null
-        }
+        lensEngine?.release()
+        lensEngine = null
     }
 
     @SuppressLint("MissingPermission")
     @Throws(IOException::class)
     private fun startLensEngine() {
         if (startRequested) {
-            lensEngine!!.run()
+            lensEngine?.run()
             startRequested = false
         }
     }
@@ -153,7 +101,7 @@ class LensEnginePreview(private val context: Context, attrs: AttributeSet?) : Vi
         override fun surfaceDestroyed(surface: SurfaceHolder) {}
         override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             Log.d(TAG, "surfaceChanged")
-            val camera = lensEngine.getCamera() ?: return
+            val camera = lensEngine?.camera ?: return
             try {
                 if (isSynchronous) {
                     surfaceTexture = SurfaceTexture(TEXTURE_NAME)
@@ -176,7 +124,7 @@ class LensEnginePreview(private val context: Context, attrs: AttributeSet?) : Vi
         if (lensEngine == null) {
             return
         }
-        val size = lensEngine.getPreviewSize() ?: return
+        val size = lensEngine?.previewSize ?: return
         var width = size.width
         var height = size.height
 
@@ -229,13 +177,13 @@ class LensEnginePreview(private val context: Context, attrs: AttributeSet?) : Vi
         }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (CameraConfiguration.Companion.getCameraFacing() == CameraConfiguration.Companion.CAMERA_FACING_FRONT) {
+        if (CameraConfiguration.cameraFacing == CameraConfiguration.CAMERA_FACING_FRONT) {
             return true
         }
         if (event.pointerCount == 1) {
             when (event.action) {
                 MotionEvent.ACTION_UP -> if (lensEngine != null) {
-                    handleFocusMetering(event, lensEngine.getCamera())
+                    handleFocusMetering(event, lensEngine?.camera)
                 }
             }
         } else {
@@ -245,13 +193,14 @@ class LensEnginePreview(private val context: Context, attrs: AttributeSet?) : Vi
                     Log.d(TAG, "toby onTouch: ACTION_MOVE")
                     val newDist = getFingerSpacing(event)
                     if (newDist > oldDist) {
-                        handleZoom(true, lensEngine.getCamera())
+                        handleZoom(true, lensEngine?.camera)
                     } else if (newDist < oldDist) {
-                        handleZoom(false, lensEngine.getCamera())
+                        handleZoom(false, lensEngine?.camera)
                     }
                     oldDist = newDist
                 }
-                else -> {}
+                else -> {
+                }
             }
         }
         return true
@@ -315,7 +264,7 @@ class LensEnginePreview(private val context: Context, attrs: AttributeSet?) : Vi
         private fun getFingerSpacing(event: MotionEvent): Float {
             val x = event.getX(0) - event.getX(1)
             val y = event.getY(0) - event.getY(1)
-            return Math.sqrt((x * x + y * y).toDouble()).toFloat()
+            return sqrt((x * x + y * y).toDouble()).toFloat()
         }
 
         private fun calculateTapArea(
@@ -353,8 +302,8 @@ class LensEnginePreview(private val context: Context, attrs: AttributeSet?) : Vi
                 ).toFloat()
             )
             return Rect(
-                Math.round(rectF.left), Math.round(rectF.top), Math.round(rectF.right),
-                Math.round(rectF.bottom)
+                rectF.left.roundToInt(), rectF.top.roundToInt(), rectF.right.roundToInt(),
+                rectF.bottom.roundToInt()
             )
         }
 
@@ -369,7 +318,6 @@ class LensEnginePreview(private val context: Context, attrs: AttributeSet?) : Vi
     }
 
     init {
-        surfaceView = SurfaceView(context)
         surfaceView.holder.addCallback(SurfaceCallback())
         this.addView(surfaceView)
     }

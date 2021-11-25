@@ -15,108 +15,42 @@
  */
 package com.huawei.mlkit.sample.activity.scenedection
 
-import com.huawei.mlkit.sample.activity.BaseActivity.onCreate
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBar
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBarFontColor
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter
-import android.annotation.SuppressLint
-import android.os.Bundle
-import com.huawei.mlkit.sample.R
-import android.graphics.Bitmap
-import com.google.gson.Gson
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionConstant
-import com.huawei.mlkit.sample.activity.table.TableRecognitionActivity
-import android.content.pm.PackageManager
-import jxl.write.WriteException
-import kotlin.Throws
-import jxl.write.WritableWorkbook
-import jxl.Workbook
-import jxl.write.WritableSheet
-import android.graphics.BitmapFactory
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzer
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzerFactory
-import com.google.gson.JsonObject
-import com.huawei.hmf.tasks.OnSuccessListener
-import android.content.Intent
-import com.huawei.hmf.tasks.OnFailureListener
-import android.content.DialogInterface
-import android.provider.MediaStore
-import android.content.ContentValues
 import android.app.Activity
 import android.content.Context
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.activity.`object`.ObjectDetectionActivity
-import com.bumptech.glide.Glide
-import com.huawei.mlkit.sample.activity.adapter.imgseg.MyGridViewAdapter
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter.ItemHolder
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute.TablesContent.TableAttribute.TableCellAttribute
-import com.huawei.hms.mlplugin.productvisionsearch.MLProductVisionSearchCapture.AbstractProductFragment
-import com.huawei.mlkit.sample.activity.adapter.BottomSheetAdapter
-import com.huawei.mlkit.sample.activity.fragment.ProductFragment
-import com.huawei.mlkit.sample.activity.imageseg.LoadHairActivity
-import com.huawei.mlkit.sample.activity.imageseg.LoadPhotoActivity
-import com.huawei.mlkit.sample.activity.imageseg.StillCutPhotoActivity
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.renderscript.RenderScript
-import android.view.View.OnTouchListener
-import android.os.Build
-import android.graphics.drawable.BitmapDrawable
-import androidx.viewpager.widget.ViewPager
-import com.huawei.mlkit.sample.activity.adapter.TabFragmentAdapter
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity.PagerChangeListener
-import com.huawei.mlkit.sample.activity.fragment.BackgroundChangeFragment
-import com.huawei.mlkit.sample.activity.fragment.CaptureImageFragment
-import com.huawei.mlkit.sample.activity.fragment.SliceImageFragment
-import com.huawei.mlkit.sample.activity.fragment.HairImageFragment
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewStartActivity
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewCorretionActivity
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzer
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionResult
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionCoordinateInput
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerSetting
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerFactory
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewDetectResult
-import com.huawei.mlkit.sample.activity.scenedection.SceneDectionActivity
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.content.pm.PackageInfo
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.hardware.Camera
 import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
 import android.util.SparseArray
 import android.view.*
 import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.activity.imageclassfication.ImageClassificationActivity
-import com.huawei.agconnect.config.AGConnectServicesConfig
-import com.huawei.hms.mlsdk.common.MLApplication
+import com.huawei.hms.mlsdk.common.MLFrame
 import com.huawei.hms.mlsdk.scd.MLSceneDetection
-import com.huawei.mlkit.sample.activity.table.TableRecognitionStartActivity
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity
-import com.huawei.mlkit.sample.activity.``object`
+import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
+import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
+import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
+import com.huawei.mlkit.sample.R
+import com.huawei.mlkit.sample.activity.scenedection.SceneDectionActivity
 import com.huawei.mlkit.sample.camera.CameraConfiguration
 import com.huawei.mlkit.sample.camera.LensEngine
 import com.huawei.mlkit.sample.camera.LensEnginePreview
+import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
 import com.huawei.mlkit.sample.views.overlay.GraphicOverlay
 import java.io.IOException
-import java.lang.Exception
-import java.lang.RuntimeException
 import java.math.BigDecimal
 import java.nio.ByteBuffer
-import java.util.ArrayList
+import java.util.*
 
 class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
     View.OnClickListener {
-    private var resultText: TextView? = null
+    private lateinit var resultText: TextView
     private var _bitmap: Bitmap? = null
     private var imageUri: Uri? = null
     private var analyzer: MLSceneDetectionAnalyzer? = null
@@ -126,14 +60,14 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
     private var lensEngine: LensEngine? = null
     private var preview: LensEnginePreview? = null
     private var graphicOverlay: GraphicOverlay? = null
-    private var facingSwitch: ToggleButton? = null
+    private lateinit var facingSwitch: ToggleButton
     private var cameraConfiguration: CameraConfiguration? = null
     private var facing = CameraConfiguration.CAMERA_FACING_BACK
     private var mCamera: Camera? = null
-    private var iv_return_back: ImageView? = null
-    private var iv_select_album: ImageView? = null
-    private var iv_result: ImageView? = null
-    private var rl_select_album_result: RelativeLayout? = null
+    private lateinit var iv_return_back: ImageView
+    private lateinit var iv_select_album: ImageView
+    private lateinit var iv_result: ImageView
+    private lateinit var rl_select_album_result: RelativeLayout
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scene_dection)
@@ -170,7 +104,7 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
 
     private fun createLensEngine() {
         if (lensEngine == null) {
-            lensEngine = LensEngine(this, cameraConfiguration, graphicOverlay)
+            lensEngine = LensEngine(this, cameraConfiguration!!, graphicOverlay!!)
         }
         try {
             lensEngine!!.setMachineLearningFrameTransactor(
@@ -191,7 +125,7 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
         if (null != lensEngine) {
             mCamera = lensEngine!!.camera
             try {
-                mCamera.setPreviewDisplay(preview!!.surfaceHolder)
+                mCamera?.setPreviewDisplay(preview!!.surfaceHolder)
             } catch (e: IOException) {
                 Log.d(TAG, "initViews IOException")
             }
@@ -199,12 +133,12 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
     }
 
     private fun startLensEngine() {
-        if (lensEngine != null) {
+        lensEngine?.let {
             try {
                 preview!!.start(lensEngine, false)
             } catch (e: IOException) {
                 Log.e(TAG, "Unable to start lensEngine.", e)
-                lensEngine!!.release()
+                lensEngine?.release()
                 lensEngine = null
             }
         }
@@ -220,11 +154,11 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
     }
 
     private val requiredPermissions: Array<String?>
-        private get() = try {
+        get() = try {
             val info = packageManager
                 .getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
             val ps = info.requestedPermissions
-            if (ps != null && ps.size > 0) {
+            if (ps != null && ps.isNotEmpty()) {
                 ps
             } else {
                 arrayOfNulls(0)
@@ -235,14 +169,14 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
             arrayOfNulls(0)
         }
     private val runtimePermissions: Unit
-        private get() {
+        get() {
             val allNeededPermissions: MutableList<String?> = ArrayList()
             for (permission in requiredPermissions) {
                 if (!isPermissionGranted(this, permission)) {
                     allNeededPermissions.add(permission)
                 }
             }
-            if (!allNeededPermissions.isEmpty()) {
+            if (allNeededPermissions.isNotEmpty()) {
                 ActivityCompat.requestPermissions(
                     this,
                     allNeededPermissions.toTypedArray(),
@@ -258,14 +192,12 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
 
     override fun onStop() {
         super.onStop()
-        preview!!.stop()
+        preview?.stop()
     }
 
     private fun releaseLensEngine() {
-        if (lensEngine != null) {
-            lensEngine!!.release()
-            lensEngine = null
-        }
+        lensEngine?.release()
+        lensEngine = null
     }
 
     private fun initAnalyzer() {
@@ -289,7 +221,7 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
 
     private fun detectImage() {
         if (_bitmap == null) {
-            resultText!!.text = "Picture error"
+            resultText.text = "Picture error"
             return
         }
         Log.e(TAG, "formType=" + _bitmap!!.config)
@@ -298,10 +230,10 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
             .create()
         val sparseArray: SparseArray<*>? = analyzer!!.analyseFrame(frame)
         if (sparseArray == null || sparseArray.size() == 0) {
-            resultText!!.text = "No scene was identified "
+            resultText.text = "No scene was identified "
             operateType = REQUEST_SELECT_ALBUM
-            rl_select_album_result!!.visibility = View.VISIBLE
-            iv_result!!.setImageBitmap(_bitmap)
+            rl_select_album_result.visibility = View.VISIBLE
+            iv_result.setImageBitmap(_bitmap)
             return
         }
         var hasBigConfidence = false
@@ -316,12 +248,12 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
                     confidence.toDouble()
                 )
             ) {
-                val a: BigDecimal = BigDecimal(realConfidence)
+                val a = BigDecimal(realConfidence.toDouble())
                 val b = BigDecimal(100)
-                val c = a.multiply(b).toFloat()
-                val d: BigDecimal = BigDecimal(c)
+                val c = a.multiply(b).toDouble()
+                val d = BigDecimal(c)
                 var variable = d.setScale(2, BigDecimal.ROUND_HALF_UP).toFloat()
-                if (java.lang.Float.toString(variable).contains("E")) {
+                if (variable.toString().contains("E")) {
                     variable = 0.01f
                 }
                 hasBigConfidence = true
@@ -335,10 +267,10 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
         if (!hasBigConfidence) {
             str = "No scene was identified"
         }
-        resultText!!.text = str
+        resultText.text = str
         operateType = REQUEST_SELECT_ALBUM
-        rl_select_album_result!!.visibility = View.VISIBLE
-        iv_result!!.setImageBitmap(_bitmap)
+        rl_select_album_result.visibility = View.VISIBLE
+        iv_result.setImageBitmap(_bitmap)
     }
 
     override fun onDestroy() {
@@ -382,7 +314,7 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
     override fun onClick(view: View) {
         when (view.id) {
             R.id.iv_return_back -> if (operateType == REQUEST_SELECT_ALBUM) {
-                rl_select_album_result!!.visibility = View.GONE
+                rl_select_album_result.visibility = View.GONE
                 operateType = REQUEST_TAKE_PHOTO
                 createLensEngine()
                 restartLensEngine()
@@ -399,11 +331,8 @@ class SceneDectionActivity : Activity(), CompoundButton.OnCheckedChangeListener,
         private const val REQUEST_SELECT_ALBUM = 10
         private const val REQUEST_TAKE_PHOTO = 20
         private fun isPermissionGranted(context: Context, permission: String?): Boolean {
-            return if (ContextCompat.checkSelfPermission(context, permission!!)
-                == PackageManager.PERMISSION_GRANTED
-            ) {
-                true
-            } else false
+            return (ContextCompat.checkSelfPermission(context, permission!!)
+                    == PackageManager.PERMISSION_GRANTED)
         }
 
         fun bytetoBuffer(value: ByteArray): ByteBuffer {

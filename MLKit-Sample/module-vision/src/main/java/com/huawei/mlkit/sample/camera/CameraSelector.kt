@@ -105,7 +105,7 @@ class CameraSelector(
      */
     @Throws(IOException::class)
     fun createCamera(): Camera {
-        val cameraId = getIdForRequestedCamera(CameraConfiguration.Companion.getCameraFacing())
+        val cameraId = getIdForRequestedCamera(CameraConfiguration.cameraFacing)
         if (cameraId == -1) {
             throw IOException("Could not find the requested camera.")
         }
@@ -149,7 +149,7 @@ class CameraSelector(
     }
 
     val facing: Int
-        get() = CameraConfiguration.Companion.getCameraFacing()
+        get() = CameraConfiguration.cameraFacing
 
     /**
      * Calculates the correct rotation for the given camera id and sets the rotation in the

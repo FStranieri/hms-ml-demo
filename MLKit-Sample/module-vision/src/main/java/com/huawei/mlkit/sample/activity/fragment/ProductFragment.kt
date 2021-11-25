@@ -15,100 +15,19 @@
  */
 package com.huawei.mlkit.sample.activity.fragment
 
-import com.huawei.mlkit.sample.activity.BaseActivity.onCreate
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBar
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBarFontColor
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter
-import android.widget.TextView
-import android.annotation.SuppressLint
 import android.os.Bundle
-import com.huawei.mlkit.sample.R
-import android.graphics.Bitmap
-import com.google.gson.Gson
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionConstant
-import com.huawei.mlkit.sample.activity.table.TableRecognitionActivity
-import android.content.pm.PackageManager
-import jxl.write.WriteException
-import kotlin.Throws
-import jxl.write.WritableWorkbook
-import jxl.Workbook
-import jxl.write.WritableSheet
-import android.widget.Toast
-import android.graphics.BitmapFactory
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzer
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzerFactory
-import com.google.gson.JsonObject
-import com.huawei.hmf.tasks.OnSuccessListener
-import android.content.Intent
-import com.huawei.hmf.tasks.OnFailureListener
-import android.content.DialogInterface
-import android.provider.MediaStore
-import android.content.ContentValues
-import android.app.Activity
-import android.widget.CompoundButton
-import android.widget.ToggleButton
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.activity.`object`.ObjectDetectionActivity
-import com.bumptech.glide.Glide
-import com.huawei.mlkit.sample.activity.adapter.imgseg.MyGridViewAdapter
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter.ItemHolder
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute.TablesContent.TableAttribute.TableCellAttribute
-import com.huawei.hms.mlplugin.productvisionsearch.MLProductVisionSearchCapture.AbstractProductFragment
-import android.widget.GridView
-import com.huawei.mlkit.sample.activity.adapter.BottomSheetAdapter
-import com.huawei.mlkit.sample.activity.fragment.ProductFragment
-import com.huawei.mlkit.sample.activity.imageseg.LoadHairActivity
-import com.huawei.mlkit.sample.activity.imageseg.LoadPhotoActivity
-import com.huawei.mlkit.sample.activity.imageseg.StillCutPhotoActivity
-import android.widget.AdapterView
-import android.widget.LinearLayout
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import android.widget.ImageButton
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.renderscript.RenderScript
-import android.view.View.OnTouchListener
-import android.os.Build
-import android.widget.RelativeLayout
-import android.graphics.drawable.BitmapDrawable
-import androidx.viewpager.widget.ViewPager
-import com.huawei.mlkit.sample.activity.adapter.TabFragmentAdapter
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity.PagerChangeListener
-import com.huawei.mlkit.sample.activity.fragment.BackgroundChangeFragment
-import com.huawei.mlkit.sample.activity.fragment.CaptureImageFragment
-import com.huawei.mlkit.sample.activity.fragment.SliceImageFragment
-import com.huawei.mlkit.sample.activity.fragment.HairImageFragment
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewStartActivity
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewCorretionActivity
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzer
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionResult
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionCoordinateInput
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerSetting
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerFactory
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewDetectResult
-import android.widget.EditText
-import com.huawei.mlkit.sample.activity.scenedection.SceneDectionActivity
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.content.pm.PackageInfo
 import android.util.Log
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import android.util.SparseArray
-import android.view.*
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.activity.imageclassfication.ImageClassificationActivity
-import com.huawei.agconnect.config.AGConnectServicesConfig
-import com.huawei.hms.mlsdk.common.MLApplication
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.GridView
+import android.widget.TextView
+import com.huawei.hms.mlplugin.productvisionsearch.MLProductVisionSearchCapture.AbstractProductFragment
 import com.huawei.hms.mlsdk.productvisionsearch.MLProductVisionSearch
 import com.huawei.hms.mlsdk.productvisionsearch.MLVisionSearchProduct
-import com.huawei.mlkit.sample.activity.table.TableRecognitionStartActivity
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity
-import com.huawei.mlkit.sample.activity.``object`
-import java.lang.Exception
-import java.util.ArrayList
+import com.huawei.mlkit.sample.R
+import com.huawei.mlkit.sample.activity.adapter.BottomSheetAdapter
+import java.util.*
 
 /**
  * Fragments of the result display of the product vision search, which is inherited from
@@ -118,12 +37,12 @@ import java.util.ArrayList
  * @since 2020-05-29
  */
 class ProductFragment : AbstractProductFragment<MLProductVisionSearch>() {
-    private var root: View? = null
+    private lateinit var root: View
     private val mlProducts: MutableList<MLVisionSearchProduct> = ArrayList()
     private var productData: List<MLProductVisionSearch>? = null
-    private var gridView: GridView? = null
+    private lateinit var gridView: GridView
     private var adapter: BottomSheetAdapter? = null
-    private var prompt: TextView? = null
+    private lateinit var prompt: TextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -131,7 +50,7 @@ class ProductFragment : AbstractProductFragment<MLProductVisionSearch>() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         root = View.inflate(context, R.layout.fragment_product, null)
         initView()
         return root
@@ -143,12 +62,12 @@ class ProductFragment : AbstractProductFragment<MLProductVisionSearch>() {
     }
 
     private fun initView() {
-        gridView = root!!.findViewById(R.id.gv)
-        prompt = root!!.findViewById(R.id.prompt)
-        gridView.setNumColumns(2)
+        gridView = root.findViewById(R.id.gv)
+        prompt = root.findViewById(R.id.prompt)
+        gridView.numColumns = 2
         adapter = BottomSheetAdapter(mlProducts, context)
-        root!!.findViewById<View>(R.id.img_close).setOnClickListener { activity!!.finish() }
-        gridView.setAdapter(adapter)
+        root.findViewById<View>(R.id.img_close).setOnClickListener { activity!!.finish() }
+        gridView.adapter = adapter
     }
 
     @Throws(Exception::class)
@@ -167,7 +86,7 @@ class ProductFragment : AbstractProductFragment<MLProductVisionSearch>() {
         }
         mlProducts.clear()
         if (productList.size == PRODUCT_NUM) {
-            prompt!!.text = getString(R.string.empty_product)
+            prompt.text = getString(R.string.empty_product)
             return
         }
         for (search in productList) {

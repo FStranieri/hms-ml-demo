@@ -15,93 +15,23 @@
  */
 package com.huawei.mlkit.sample.activity.imageseg
 
-import com.huawei.mlkit.sample.activity.BaseActivity.onCreate
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBar
-import com.huawei.mlkit.sample.activity.BaseActivity.setStatusBarFontColor
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter
-import android.annotation.SuppressLint
-import android.os.Bundle
-import com.huawei.mlkit.sample.R
-import android.graphics.Bitmap
-import com.google.gson.Gson
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionConstant
-import com.huawei.mlkit.sample.activity.table.TableRecognitionActivity
-import android.content.pm.PackageManager
-import jxl.write.WriteException
-import kotlin.Throws
-import jxl.write.WritableWorkbook
-import jxl.Workbook
-import jxl.write.WritableSheet
-import android.graphics.BitmapFactory
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzer
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionAnalyzerFactory
-import com.google.gson.JsonObject
-import com.huawei.hmf.tasks.OnSuccessListener
 import android.content.Intent
-import com.huawei.hmf.tasks.OnFailureListener
-import android.content.DialogInterface
-import android.provider.MediaStore
-import android.content.ContentValues
-import android.app.Activity
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.activity.`object`.ObjectDetectionActivity
-import com.bumptech.glide.Glide
-import com.huawei.mlkit.sample.activity.adapter.imgseg.MyGridViewAdapter
-import com.huawei.mlkit.sample.activity.adapter.ItemAdapter.ItemHolder
-import com.huawei.hms.mlsdk.fr.MLFormRecognitionTablesAttribute.TablesContent.TableAttribute.TableCellAttribute
-import com.huawei.hms.mlplugin.productvisionsearch.MLProductVisionSearchCapture.AbstractProductFragment
-import com.huawei.mlkit.sample.activity.adapter.BottomSheetAdapter
-import com.huawei.mlkit.sample.activity.fragment.ProductFragment
-import com.huawei.mlkit.sample.activity.imageseg.LoadHairActivity
-import com.huawei.mlkit.sample.activity.imageseg.LoadPhotoActivity
-import com.huawei.mlkit.sample.activity.imageseg.StillCutPhotoActivity
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.renderscript.RenderScript
-import android.view.View.OnTouchListener
-import android.os.Build
-import android.graphics.drawable.BitmapDrawable
-import androidx.viewpager.widget.ViewPager
-import com.huawei.mlkit.sample.activity.adapter.TabFragmentAdapter
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity.PagerChangeListener
-import com.huawei.mlkit.sample.activity.fragment.BackgroundChangeFragment
-import com.huawei.mlkit.sample.activity.fragment.CaptureImageFragment
-import com.huawei.mlkit.sample.activity.fragment.SliceImageFragment
-import com.huawei.mlkit.sample.activity.fragment.HairImageFragment
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewStartActivity
-import com.huawei.mlkit.sample.activity.documentskew.DocumentSkewCorretionActivity
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzer
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionResult
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionCoordinateInput
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerSetting
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerFactory
-import com.huawei.hms.mlsdk.dsc.MLDocumentSkewDetectResult
-import com.huawei.mlkit.sample.activity.scenedection.SceneDectionActivity
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.content.pm.PackageInfo
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.util.Pair
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import android.util.SparseArray
 import android.view.*
 import android.widget.*
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.activity.imageclassfication.ImageClassificationActivity
-import com.huawei.agconnect.config.AGConnectServicesConfig
+import com.huawei.hmf.tasks.OnFailureListener
 import com.huawei.hms.mlsdk.MLAnalyzerFactory
-import com.huawei.hms.mlsdk.common.MLApplication
+import com.huawei.hms.mlsdk.common.MLFrame
 import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationAnalyzer
 import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationSetting
-import com.huawei.mlkit.sample.activity.table.TableRecognitionStartActivity
-import com.huawei.mlkit.sample.activity.imageseg.ImageSegmentationActivity
-import com.huawei.mlkit.sample.activity.``object`
+import com.huawei.mlkit.sample.R
 import com.huawei.mlkit.sample.activity.BaseActivity
 import com.huawei.mlkit.sample.callback.ImageSegmentationResultCallBack
 import com.huawei.mlkit.sample.util.BitmapUtils
@@ -110,12 +40,12 @@ import com.huawei.mlkit.sample.views.overlay.GraphicOverlay
 import java.io.IOException
 
 class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
-    private var relativeLayoutLoadPhoto: RelativeLayout? = null
-    private var relativeLayoutCut: RelativeLayout? = null
-    private var relativeLayoutBackgrounds: RelativeLayout? = null
-    private var relativeLayoutSave: RelativeLayout? = null
+    private lateinit var relativeLayoutLoadPhoto: RelativeLayout
+    private lateinit var relativeLayoutCut: RelativeLayout
+    private lateinit var relativeLayoutBackgrounds: RelativeLayout
+    private lateinit var relativeLayoutSave: RelativeLayout
     private var graphicOverlay: GraphicOverlay? = null
-    private var preview: ImageView? = null
+    private lateinit var preview: ImageView
     private var imageUri: Uri? = null
     private var imgBackgroundUri: Uri? = null
     private var originBitmap: Bitmap? = null
@@ -150,10 +80,10 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
     }
 
     private fun initAction() {
-        relativeLayoutLoadPhoto!!.setOnClickListener { selectLocalImage(REQUEST_CHOOSE_ORIGINPIC) }
+        relativeLayoutLoadPhoto.setOnClickListener { selectLocalImage(REQUEST_CHOOSE_ORIGINPIC) }
 
         // Outline the edge.
-        relativeLayoutCut!!.setOnClickListener {
+        relativeLayoutCut.setOnClickListener {
             if (imageUri == null) {
                 Toast.makeText(
                     this@StillCutPhotoActivity.applicationContext,
@@ -171,7 +101,7 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
         }
 
         // Replace background.
-        relativeLayoutBackgrounds!!.setOnClickListener {
+        relativeLayoutBackgrounds.setOnClickListener {
             if (imageUri == null) {
                 Toast.makeText(
                     this@StillCutPhotoActivity.applicationContext,
@@ -184,7 +114,7 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
         }
 
         // Save the processed picture.
-        relativeLayoutSave!!.setOnClickListener {
+        relativeLayoutSave.setOnClickListener {
             if (processedImage == null) {
                 Toast.makeText(
                     this@StillCutPhotoActivity.applicationContext,
@@ -193,7 +123,7 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
                 ).show()
             } else {
                 val imageUtils = ImageUtils(this@StillCutPhotoActivity.applicationContext)
-                imageUtils.saveToAlbum(processedImage)
+                imageUtils.saveToAlbum(processedImage!!)
                 Toast.makeText(
                     this@StillCutPhotoActivity.applicationContext,
                     R.string.save_success,
@@ -201,7 +131,7 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
                 ).show()
             }
         }
-        relativeLayoutSave!!.post { selectLocalImage(REQUEST_CHOOSE_ORIGINPIC) }
+        relativeLayoutSave.post { selectLocalImage(REQUEST_CHOOSE_ORIGINPIC) }
     }
 
     private fun selectLocalImage(requestCode: Int) {
@@ -229,7 +159,7 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
                 val targetedSize = targetSize
                 backgroundBitmap = BitmapUtils.loadFromPath(
                     this@StillCutPhotoActivity,
-                    imgBackgroundUri,
+                    imgBackgroundUri!!,
                     targetedSize.first,
                     targetedSize.second
                 )
@@ -241,11 +171,11 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
     private fun changeBackground(backgroundBitmap: Bitmap?) {
         if (isChosen(foreground) && isChosen(backgroundBitmap)) {
             val drawable = BitmapDrawable(backgroundBitmap)
-            preview!!.isDrawingCacheEnabled = true
-            preview!!.background = drawable
-            preview!!.setImageBitmap(foreground)
-            processedImage = Bitmap.createBitmap(preview!!.drawingCache)
-            preview!!.isDrawingCacheEnabled = false
+            preview.isDrawingCacheEnabled = true
+            preview.background = drawable
+            preview.setImageBitmap(foreground)
+            processedImage = Bitmap.createBitmap(preview.drawingCache)
+            preview.isDrawingCacheEnabled = false
         } else {
             Toast.makeText(
                 this.applicationContext,
@@ -264,12 +194,12 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
         analyzer = MLAnalyzerFactory.getInstance().getImageSegmentationAnalyzer(setting)
         if (isChosen(originBitmap)) {
             val mlFrame = MLFrame.Creator().setBitmap(originBitmap).create()
-            val task = analyzer.asyncAnalyseFrame(mlFrame)
+            val task = analyzer!!.asyncAnalyseFrame(mlFrame)
             task.addOnSuccessListener { mlImageSegmentationResults -> // Transacting logic for segment success.
                 if (mlImageSegmentationResults != null) {
                     foreground = mlImageSegmentationResults.getForeground()
-                    preview!!.setImageBitmap(foreground)
-                    processedImage = (preview!!.drawable as BitmapDrawable).bitmap
+                    preview.setImageBitmap(foreground)
+                    processedImage = (preview.drawable as BitmapDrawable).bitmap
                 } else {
                     displayFailure()
                 }
@@ -310,40 +240,41 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
         val targetHeight = targetedSize.second
         originBitmap = BitmapUtils.loadFromPath(
             this@StillCutPhotoActivity,
-            imageUri,
+            imageUri!!,
             targetWidth,
             targetHeight
         )
         // Determine how much to scale down the image.
         Log.i(
             "imageSlicer",
-            "resized image size width:" + originBitmap.getWidth() + ",height: " + originBitmap.getHeight()
+            "resized image size width:" + originBitmap?.width + ",height: " + originBitmap?.height
         )
-        preview!!.setImageBitmap(originBitmap)
+        preview.setImageBitmap(originBitmap)
     }
 
     // Returns max width of image.
-    private fun getMaxWidthOfImage(): Int? {
+    private fun getMaxWidthOfImage(): Int {
         if (maxWidthOfImage == null) {
-            if (isLandScape) {
-                maxWidthOfImage = (preview!!.parent as View).height
+            maxWidthOfImage = if (isLandScape) {
+                (preview.parent as View).height
             } else {
-                maxWidthOfImage = (preview!!.parent as View).width
+                (preview.parent as View).width
             }
         }
-        return maxWidthOfImage
+
+        return maxWidthOfImage!!
     }
 
     // Returns max height of image.
-    private fun getMaxHeightOfImage(): Int? {
+    private fun getMaxHeightOfImage(): Int {
         if (maxHeightOfImage == null) {
-            if (isLandScape) {
-                maxHeightOfImage = (preview!!.parent as View).width
+            maxHeightOfImage = if (isLandScape) {
+                (preview.parent as View).width
             } else {
-                maxHeightOfImage = (preview!!.parent as View).height
+                (preview.parent as View).height
             }
         }
-        return maxHeightOfImage
+        return maxHeightOfImage!!
     }
 
     // Gets the targeted size(width / height).
@@ -371,10 +302,8 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
         imageUri = null
         imgBackgroundUri = null
         BitmapUtils.recycleBitmap(originBitmap, backgroundBitmap, foreground, processedImage)
-        if (graphicOverlay != null) {
-            graphicOverlay!!.clear()
-            graphicOverlay = null
-        }
+        graphicOverlay?.clear()
+        graphicOverlay = null
     }
 
     public override fun onSaveInstanceState(outState: Bundle) {
@@ -392,7 +321,7 @@ class StillCutPhotoActivity : BaseActivity(), ImageSegmentationResultCallBack {
         super.onResume()
     }
 
-    override fun callResultBitmap(bitmap: Bitmap) {
+    override fun callResultBitmap(bitmap: Bitmap?) {
         processedImage = bitmap
     }
 

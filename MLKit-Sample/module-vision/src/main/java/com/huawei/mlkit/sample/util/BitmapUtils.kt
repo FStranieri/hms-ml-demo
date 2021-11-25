@@ -18,67 +18,22 @@
  */
 package com.huawei.mlkit.sample.util
 
-import android.annotation.SuppressLint
 import android.app.Activity
-import kotlin.jvm.Synchronized
-import kotlin.Throws
-import android.hardware.Camera.PictureCallback
-import android.hardware.Camera.PreviewCallback
-import android.hardware.Camera.CameraInfo
-import android.hardware.Camera.AutoFocusCallback
-import com.huawei.hms.mlsdk.common.MLFrame
-import com.huawei.hmf.tasks.OnSuccessListener
-import com.huawei.hmf.tasks.OnFailureListener
-import com.huawei.mlkit.sample.transactor.LocalObjectTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalObjectGraphic
-import com.huawei.mlkit.sample.transactor.RemoteLandmarkTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteLandmarkGraphic
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzer
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerSetting
-import com.huawei.hms.mlsdk.scd.MLSceneDetectionAnalyzerFactory
-import com.huawei.mlkit.sample.views.graphic.SceneDetectionGraphic
-import com.huawei.mlkit.sample.transactor.SceneDetectionTransactor
-import android.renderscript.RenderScript
-import com.huawei.mlkit.sample.transactor.ImageSegmentationTransactor
-import android.util.SparseArray
-import android.widget.Toast
-import android.renderscript.Allocation
-import android.renderscript.ScriptIntrinsicBlur
-import com.huawei.mlkit.sample.transactor.StillImageSegmentationTransactor
-import com.huawei.mlkit.sample.transactor.LocalImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.LocalImageClassificationGraphic
-import com.huawei.mlkit.sample.transactor.RemoteImageClassificationTransactor
-import com.huawei.mlkit.sample.views.graphic.RemoteImageClassificationGraphic
-import com.huawei.mlkit.sample.R
-import android.os.Build
-import android.provider.DocumentsContract
-import android.provider.MediaStore
-import android.content.ContentUris
 import android.content.Context
-import android.os.Environment
-import android.media.MediaScannerConnection
-import android.media.MediaScannerConnection.OnScanCompletedListener
 import android.content.Intent
-import android.os.ParcelFileDescriptor
-import android.renderscript.ScriptIntrinsicYuvToRGB
-import android.content.SharedPreferences
-import kotlin.jvm.JvmOverloads
-import android.content.res.TypedArray
 import android.graphics.*
-import android.view.View.MeasureSpec
-import android.os.Parcelable
-import android.os.Parcel
-import android.util.DisplayMetrics
-import android.widget.GridView
-import android.widget.AbsListView
-import android.graphics.drawable.Drawable
+import android.hardware.Camera.CameraInfo
 import android.media.ExifInterface
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.*
+import com.huawei.hms.mlsdk.common.MLFrame
 import com.huawei.mlkit.sample.camera.FrameMetadata
 import java.io.*
-import java.lang.Exception
 import java.nio.ByteBuffer
 
 object BitmapUtils {
@@ -97,18 +52,18 @@ object BitmapUtils {
         data[imageBuffer, 0, imageBuffer.size]
         try {
             val yuvImage = YuvImage(
-                imageBuffer, ImageFormat.NV21, metadata.getWidth(),
-                metadata.getHeight(), null
+                imageBuffer, ImageFormat.NV21, metadata!!.width,
+                metadata.height, null
             )
             val stream = ByteArrayOutputStream()
             yuvImage.compressToJpeg(
-                Rect(0, 0, metadata.getWidth(), metadata.getHeight()),
+                Rect(0, 0, metadata.width, metadata.height),
                 80,
                 stream
             )
             val bitmap = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size())
             stream.close()
-            return rotateBitmap(bitmap, metadata.getRotation(), metadata.getCameraFacing())
+            return rotateBitmap(bitmap, metadata.rotation, metadata.cameraFacing)
         } catch (e: Exception) {
             Log.e(TAG, "Error: " + e.message)
         }
@@ -136,7 +91,6 @@ object BitmapUtils {
         for (bitmap in bitmaps) {
             if (bitmap != null && !bitmap.isRecycled) {
                 bitmap.recycle()
-                bitmap = null
             }
         }
     }
@@ -470,9 +424,8 @@ object BitmapUtils {
             minHOrW = h
         }
         val resizeFlag = true
-        val targetSize: Int
         var be = 1
-        targetSize = if (resizeFlag) {
+        val targetSize: Int = if (resizeFlag) {
             500
         } else {
             3000
